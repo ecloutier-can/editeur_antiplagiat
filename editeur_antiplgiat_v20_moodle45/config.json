@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0-beta",
+  "appName": "Éditeur Anti-plagiat Premium",
+  "security": {
+    "blockContextMenu": true,
+    "blockShortcuts": ["F12", "Control+U", "Control+P", "Meta+P", "Control+Shift+I"],
+    "typingSpeedLimit": 500,
+    "heartbeatInterval": 5000
+  },
+  "pedagogy": {
+    "enableTimeline": true,
+    "timelineSnapshotInterval": 60000,
+    "allowedResources": [
+      { "title": "Guide de rédaction", "url": "#" },
+      { "title": "Consignes de l'examen", "url": "#" }
+    ]
+  },
+  "ui": {
+    "glassmorphism": true,
+    "autoSaveIndicator": true,
+    "connectionStatusIndicator": true
+  },
+  "messages": {
+    "connectionLost": "⚠️ Connexion avec le serveur perdue. Vos modifications sont sauvegardées localement.",
+    "suspiciousTyping": "⚠️ Vitesse de saisie inhabituelle détectée.",
+    "demoModeActive": "🚀 Mode Démo (GitHub) : Les données sont stockées localement uniquement."
+  }
+}
