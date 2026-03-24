@@ -1243,6 +1243,8 @@ window.addEventListener('load', function() {
     const config = e.detail;
     applyConfig(config);
     setupApp(isSCORM);
+    initCamera();
+    setupAP();
     startHeartbeat();
     setupTypingStats();
     initTimeline();
@@ -1943,6 +1945,9 @@ var _wordGoal = 0; /* 0 = pas d'objectif. Ex: 300 pour 300 mots requis */
 ═══════════════════════════════════════════════ */
 function startExam(){
   document.getElementById('welcome').style.display = 'none';
+  _apReady = true;
+  startClock();
+  log('DÉBUT EXAMEN','L\'étudiant a commencé l\'évaluation.','i');
   /* Photo d'identification après acceptation */
   setTimeout(function(){ capturePhoto('Début examen — identification'); }, 800);
 }
