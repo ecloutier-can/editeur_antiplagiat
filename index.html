@@ -1075,7 +1075,13 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
       PDF
     </button>
-    <button class="hbtn primary" id="btn-save" onclick="manualSave()" title="Sauvegarder">
+    <div style="border-left: 1px solid var(--border); height: 24px; margin: 0 4px;"></div>
+    <button class="hbtn" id="btn-import" onclick="document.getElementById('file-import').click()" title="Importer une sauvegarde locale (.plagiat)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importer
+    </button>
+    <input type="file" id="file-import" accept=".plagiat" style="display:none" onchange="importPlagiatFile(event)">
+    <button class="hbtn primary" id="btn-save" onclick="manualSave()" title="Sauvegarder et télécharger (.plagiat)">
       <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
       Sauvegarder
     </button>
@@ -1774,7 +1780,79 @@ function showRecoveryBanner(){
   },12000);
 }
 
-function manualSave(){autoSave();playAlert('save');showToast('Sauvegardé ✓');}
+/* ═══════════════════════════════════════════════
+   SAUVEGARDE LOCALE ET IMPORTATION (.plagiat)
+═══════════════════════════════════════════════ */
+function exportPlagiatFile() {
+  const obj = build();
+  // Obfuscation simple pour empêcher l'édition triviale (base64 + inversion)
+  const jsonStr = JSON.stringify(obj);
+  const obfuscated = btoa(encodeURIComponent(jsonStr).split('').reverse().join(''));
+  
+  const blob = new Blob([obfuscated], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  const safeName = S.name ? S.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'anonyme';
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.download = `sauvegarde_${safeName}_${dateStr}.plagiat`;
+  
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importPlagiatFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const obfuscated = e.target.result;
+      // Inversion de l'obfuscation
+      const jsonStr = decodeURIComponent(atob(obfuscated).split('').reverse().join(''));
+      const obj = JSON.parse(jsonStr);
+      
+      if (!obj || obj.text === undefined) throw new Error("Format invalide");
+      
+      // Restauration de l'état
+      document.getElementById('ed').innerHTML = obj.text;
+      if (obj.log) S.log = obj.log;
+      if (obj.paste !== undefined) S.paste = obj.paste;
+      if (obj.copy !== undefined) S.copy = obj.copy;
+      if (obj.tabs !== undefined) S.tabs = obj.tabs;
+      if (obj.focus !== undefined) S.focus = obj.focus;
+      if (obj.screenshots !== undefined) S.screenshots = obj.screenshots;
+      if (obj.absentMs !== undefined) S.absentMs = obj.absentMs;
+      if (obj.t0) S.t0 = obj.t0;
+      
+      log('IMPORTATION', 'Fichier de sauvegarde locale (.plagiat) restauré avec succès.', 'i');
+      
+      autoSave(); // Mettre à jour localStorage / SCORM immédiatement avec la session importée
+      updLog();
+      
+      showToast('Sauvegarde importée avec succès ✓');
+      playAlert('save');
+    } catch (err) {
+      console.error(err);
+      showToast('⚠️ Fichier invalide ou corrompu.');
+    } finally {
+      // Permettre de réimporter le même fichier
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function manualSave() {
+  autoSave();
+  exportPlagiatFile();
+  playAlert('save');
+  showToast('Sauvegardé ✓ (Fichier .plagiat téléchargé)');
+}
 function setSave(st){
   var el=document.getElementById('save-ind');
   if(st==='saved'){
