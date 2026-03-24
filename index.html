@@ -1020,7 +1020,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   <div id="pf-journal-list"></div>
 
   <div class="pf-ft">
-    Cégep de Matane — Éditeur sécurisé anti-plagiat v1.6.0 — Moodle 4.5 |
+    Éditeur sécurisé anti-plagiat v1.6.0 — Moodle 4.5 |
     Étudiant : <span id="pf-ft-nom">—</span> |
     Début : <span id="pf-ft-start">—</span> |
     Fin : <span id="pf-ft-end">—</span>
@@ -1039,7 +1039,6 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
         </svg>
       </div>
       <div id="hdr-logo-text">
-        <span id="hdr-org">Cégep de Matane</span>
         <span id="hdr-title">Éditeur sécurisé — Anti-plagiat</span>
       </div>
     </div>
@@ -2502,7 +2501,7 @@ function exportPDF(){
         /* Pied de page centré */
         pdf.text('Page ' + i + ' / ' + total, w/2, h2 - 8, {align:'center'});
         /* Pied de page gauche */
-        pdf.text('Cégep de Matane — Éditeur anti-plagiat v2.0.0', 20, h2 - 8);
+        pdf.text('Éditeur anti-plagiat v2.0.0', 20, h2 - 8);
         /* Pied de page droit — nom étudiant */
         pdf.text(S.name, w - 20, h2 - 8, {align:'right'});
       }
