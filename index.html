@@ -534,7 +534,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 
 /* ── MODAL ─────────────────────────────────────── */
 #modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.58);
-  z-index:800;align-items:center;justify-content:center}
+  z-index:900;align-items:center;justify-content:center}
 #modal.v{display:flex}
 #mbox{background:#fff;border-radius:8px;padding:22px;max-width:410px;
   width:92%;box-shadow:0 6px 24px rgba(0,0,0,.3)}
@@ -545,6 +545,79 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 .mbtn.p{background:#2b579a;color:#fff}.mbtn.p:hover{background:#1e3f73}
 .mbtn.s{background:#e0e0e0;color:#333}.mbtn.s:hover{background:#d0d0d0}
 .mbtn.d{background:#c62828;color:#fff}.mbtn.d:hover{background:#b71c1c}
+
+/* ── RESOURCE MODAL (INTERLOCK) ────────────────── */
+#res-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+#res-modal.v { display: flex; }
+#res-modal-box {
+  background: rgba(30,30,35, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 34px;
+  max-width: 460px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.res-modal-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.res-modal-icon svg { width: 32px; height: 32px; stroke-width: 1.5; }
+.res-modal-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 10px; letter-spacing: -0.5px; }
+.res-modal-desc { font-size: 14px; color: #94a3b8; margin-bottom: 30px; line-height: 1.6; }
+.res-modal-btns { display: flex; flex-direction: column; gap: 14px; }
+.rm-btn {
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.rm-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+.rm-btn-primary:hover { 
+  transform: translateY(-3px); 
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.4); 
+  filter: brightness(1.1);
+}
+.rm-btn-finish {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.rm-btn-finish:hover { 
+  background: rgba(255, 255, 255, 0.1); 
+  border-color: rgba(255, 255, 255, 0.2);
+}
 
 /* ── ALERTE BANNIÈRE ───────────────────────────── */
 /* Bannière alerte — petite, en bas à droite, ne bloque pas l'éditeur */
@@ -1204,6 +1277,28 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   <span id="sb-time">⏱ 00:00</span>
   <span id="sb-absent" style="display:none;color:#ffcc80"></span>
   <span id="save-ind" class="unsaved">● Non sauvegardé</span>
+</div>
+
+<!-- Modal de Verrouillage des Ressources -->
+<div id="res-modal">
+  <div id="res-modal-box">
+    <div class="res-modal-icon" id="rm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    </div>
+    <div class="res-modal-title" id="rm-title">Nom de la Ressource</div>
+    <div class="res-modal-desc" id="rm-desc">
+      Vous consultez actuellement cette ressource. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité de l'examen.
+    </div>
+    <div class="res-modal-btns">
+      <button class="rm-btn rm-btn-primary" id="rm-btn-open">
+        <span>Ouvrir la ressource</span>
+        <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
+      <button class="rm-btn rm-btn-finish" onclick="finishRes()">
+        <span>J'ai terminé / Retour à l'éditeur</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <div id="modal">
@@ -1878,126 +1973,79 @@ function updTb(){
    RESSOURCES — chronométrage complet des sorties
    Journal : ouverture, fermeture, durée, nb visites
 ═══════════════════════════════════════════════ */
-var RURL = {}; // Initialisé dynamiquement
+var RURL = {}; // Initialisé dynamiquement par initDynamicResources
 
 /* Statistiques par ressource */
-var _resStat = {
-  conjugueur: {visits:0, totalMs:0, lastOpen:null},
-  usito:      {visits:0, totalMs:0, lastOpen:null}
-};
+var _resStat = {}; 
 
+var _curRes=null, _popupWin=null;
 
-var _curRes=null, _frameOk=false, _frameT=null, _popupWin=null, _popupPoll=null;
-
-/* Ouvre et démarre le chrono — VERSION POPUP */
+/**
+ * Ouvre la ressource et affiche l'overlay de verrouillage
+ */
 function openRes(key){
-  if(_curRes && _curRes!==key) closeResInternal(false);
+  const config = SCORM.getConfig();
+  const res = config.pedagogy.allowedResources.find(r => r.id === key);
+  if (!res) return;
 
-  _curRes=key;
-  _resStat[key].visits++;
-  _resStat[key].lastOpen=Date.now();
-
-  const btnRow = document.getElementById('res-btn-row');
-  if (btnRow) {
-    btnRow.querySelectorAll('.res-tab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-res-id') === key);
-    });
-  }
-
-  /* Ouverture forcée en POPUP pour éviter les blocages iframe */
-  _popupWin=window.open(RURL[key].url,'ressource_auth',
-    'width=1000,height=750,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
+  _curRes = key;
+  if (!_resStat[key]) _resStat[key] = {visits:0, totalMs:0, lastOpen:null};
   
-  if(!_popupWin){
-    showToast('⚠️ Autorisez les popups dans votre navigateur.');
-  } else {
-    log('RESSOURCE AUTORISÉE', RURL[key].label+' — Ouverte en PopUp (visite #'+_resStat[key].visits+')','i');
-    /* Masquer la zone iframe si elle était visible */
-    document.getElementById('res-frame-area').style.display='none';
-    
-    /* Surveiller la fermeture */
-    if(_popupPoll)clearInterval(_popupPoll);
-    _popupPoll=setInterval(function(){
-      if(!_popupWin||_popupWin.closed){
-        clearInterval(_popupPoll);_popupPoll=null;_popupWin=null;
-        closeResInternal(false);
-      }
-    },1000);
-  }
+  _resStat[key].visits++;
+  _resStat[key].lastOpen = Date.now();
 
+  showResModal(res);
   updLog(); updResSummary();
+  log('CONSULTATION RESSOURCE', res.title + ' — Interface verrouillée pour suivi des ressources.','i');
 }
 
-function onIfrLoad(){
-  _frameOk=true;
-  if(_frameT){clearTimeout(_frameT);_frameT=null;}
-  var ifr=document.getElementById('res-ifr');
-  try{
-    var loc=ifr.contentWindow.location.href;
-    if(!loc||loc==='about:blank') showBlocked();
-  }catch(e){ /* cross-origin = site chargé = OK */ }
-}
+/**
+ * Affiche l'overlay de verrouillage (Interlock)
+ */
+function showResModal(res) {
+  const modal = document.getElementById('res-modal');
+  const title = document.getElementById('rm-title');
+  const desc = document.getElementById('rm-desc');
+  const openBtn = document.getElementById('rm-btn-open');
+  const iconCont = document.getElementById('rm-icon');
+  
+  title.textContent = res.title;
+  desc.innerHTML = `Vous consultez actuellement <strong>${res.title}</strong>. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité. Cliquez sur le bouton ci-dessous pour terminer votre session et reprendre votre travail.`;
+  
+  // Icône dynamique
+  let iconSvg = '';
+  if (res.icon === 'book') {
+    iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>';
+  } else if (res.icon === 'edit-3') {
+    iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+  } else {
+    iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+  }
+  iconCont.innerHTML = iconSvg;
 
-function showBlocked(){
-  document.getElementById('res-ifr').style.display='none';
-  document.getElementById('res-blocked').style.display='flex';
-  document.getElementById('btn-popup').onclick=function(){
-    if(!_curRes)return;
-    _popupWin=window.open(RURL[_curRes].url,'ressource_auth',
-      'width=820,height=680,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
-    if(!_popupWin){
-      showToast('Autorisez les popups dans votre navigateur.'); return;
-    }
-    log('RESSOURCE POPUP',RURL[_curRes].label+' — ouverte dans une fenêtre séparée.','i');
-    updLog();
-    /* Surveiller la fermeture du popup */
-    if(_popupPoll)clearInterval(_popupPoll);
-    _popupPoll=setInterval(function(){
-      if(!_popupWin||_popupWin.closed){
-        clearInterval(_popupPoll);_popupPoll=null;
-        var key=_curRes;
-        if(key&&_resStat[key].lastOpen){
-          var dur=Math.round((Date.now()-_resStat[key].lastOpen)/1000);
-          _resStat[key].totalMs+=Date.now()-_resStat[key].lastOpen;
-          _resStat[key].lastOpen=null;
-          log('RESSOURCE FERMÉE',
-            RURL[key].label+' — durée : '+fmtDur(dur)+
-            ' | Total accumulé : '+fmtDur(Math.round(_resStat[key].totalMs/1000))+
-            ' | Visites : '+_resStat[key].visits,'i');
-          updLog(); updResSummary();
-        }
-        _popupWin=null;
-      }
-    },1000);
+  openBtn.onclick = function() {
+    window.open(res.url, 'ressource_auth', 'width=1000,height=750,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
   };
+  
+  modal.classList.add('v');
 }
 
-/* Fermeture via bouton × — enregistre la durée */
-function closeRes(){
-  closeResInternal(true);
-}
-function closeResInternal(resetUI){
-  var key=_curRes;
-  if(key&&_resStat[key].lastOpen){
-    var dur=Math.round((Date.now()-_resStat[key].lastOpen)/1000);
-    _resStat[key].totalMs+=Date.now()-_resStat[key].lastOpen;
-    _resStat[key].lastOpen=null;
-    log('RESSOURCE FERMÉE',
-      RURL[key].label+' — durée cette visite : '+fmtDur(dur)+
-      ' | Total accumulé : '+fmtDur(Math.round(_resStat[key].totalMs/1000))+
-      ' | Visites : '+_resStat[key].visits,'i');
+/**
+ * Ferme le verrouillage et enregistre la durée
+ */
+function finishRes() {
+  const key = _curRes;
+  if(key && _resStat[key] && _resStat[key].lastOpen){
+    const dur = Math.round((Date.now() - _resStat[key].lastOpen)/1000);
+    _resStat[key].totalMs += Date.now() - _resStat[key].lastOpen;
+    _resStat[key].lastOpen = null;
+    log('RESSOURCE FERMÉE', (RURL[key]?RURL[key].label:key) + ' — durée : ' + fmtDur(dur), 'i');
     updLog(); updResSummary();
   }
-  if(resetUI){
-    document.getElementById('res-frame-area').style.display='none';
-    document.getElementById('res-ifr').src='';
-    document.getElementById('rbtn-conjugueur').classList.remove('active');
-    document.getElementById('rbtn-usito').classList.remove('active');
-  }
-  _curRes=null;
-  if(_frameT){clearTimeout(_frameT);_frameT=null;}
-  if(_popupPoll){clearInterval(_popupPoll);_popupPoll=null;}
+  document.getElementById('res-modal').classList.remove('v');
+  _curRes = null;
 }
+
 
 /* Formater une durée en secondes → "1m 34s" ou "45s" */
 function fmtDur(s){
