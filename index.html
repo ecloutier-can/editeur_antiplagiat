@@ -238,6 +238,40 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 #photo-section{border-top:1px solid #eee;padding:6px;flex-shrink:0;background:#fafafa}
 #photo-section h4{font-size:10px;color:#555;margin-bottom:5px;font-weight:600}
 #photo-grid{display:flex;flex-wrap:wrap;gap:4px}
+#welcome-auth {
+  margin: 18px 0;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+#welcome-auth label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+}
+#student-name {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+#student-name:focus {
+  border-color: var(--brand);
+}
+#btn-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
 .photo-thumb{display:flex;flex-direction:column;align-items:center;gap:2px}
 .photo-thumb img{width:72px;height:54px;border-radius:3px;
   border:1px solid #ddd;object-fit:cover}
@@ -645,6 +679,11 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       Votre texte est sauvegardé <strong>automatiquement toutes les 30 secondes</strong> dans deux endroits :<br>
       • <strong>Sur cet ordinateur</strong> (protection contre les pannes) — bouton 💾 pour sauvegarder manuellement<br>
       • <strong>Dans Moodle</strong> (base de données de votre établissement) — accessible à votre enseignant(e)
+    </div>
+
+    <div id="welcome-auth">
+      <label for="student-name">Indiquez votre nom pour commencer :</label>
+      <input type="text" id="student-name" placeholder="Prénom Nom" oninput="checkStartReady()">
     </div>
 
     <div id="welcome-cam-note">
@@ -1315,6 +1354,7 @@ function setupApp(isSCORM) {
       showToast('Nouvelle session — éditeur vide.');
       markSession();
     }
+    if (sv.t0) S.t0 = sv.t0;
   }
 }
 
@@ -1469,7 +1509,8 @@ function build(){
     paste:S.paste,copy:S.copy,tabs:S.tabs,focus:S.focus,
     screenshots:S.screenshots,absentMs:S.absentMs,
     submitted:S.submitted,
-    submitTime:S.submitTime,wc:S.wc, timeline: S.timeline};
+    submitTime:S.submitTime,wc:S.wc, timeline: S.timeline,
+    t0: S.t0};
 }
 function autoSave(){
   if(S.submitted)return;
@@ -1698,16 +1739,14 @@ var _resStat = {
 
 var _curRes=null, _frameOk=false, _frameT=null, _popupWin=null, _popupPoll=null;
 
-/* Ouvre et démarre le chrono */
+/* Ouvre et démarre le chrono — VERSION POPUP */
 function openRes(key){
-  /* Fermer la ressource précédente proprement avant d'en ouvrir une autre */
   if(_curRes && _curRes!==key) closeResInternal(false);
 
   _curRes=key;
   _resStat[key].visits++;
   _resStat[key].lastOpen=Date.now();
 
-  /* Gérer l'état actif des boutons */
   const btnRow = document.getElementById('res-btn-row');
   if (btnRow) {
     btnRow.querySelectorAll('.res-tab-btn').forEach(btn => {
@@ -1715,25 +1754,27 @@ function openRes(key){
     });
   }
 
+  /* Ouverture forcée en POPUP pour éviter les blocages iframe */
+  _popupWin=window.open(RURL[key].url,'ressource_auth',
+    'width=1000,height=750,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
+  
+  if(!_popupWin){
+    showToast('⚠️ Autorisez les popups dans votre navigateur.');
+  } else {
+    log('RESSOURCE AUTORISÉE', RURL[key].label+' — Ouverte en PopUp (visite #'+_resStat[key].visits+')','i');
+    /* Masquer la zone iframe si elle était visible */
+    document.getElementById('res-frame-area').style.display='none';
+    
+    /* Surveiller la fermeture */
+    if(_popupPoll)clearInterval(_popupPoll);
+    _popupPoll=setInterval(function(){
+      if(!_popupWin||_popupWin.closed){
+        clearInterval(_popupPoll);_popupPoll=null;_popupWin=null;
+        closeResInternal(false);
+      }
+    },1000);
+  }
 
-  var fa =document.getElementById('res-frame-area');
-  var lbl=document.getElementById('res-frame-label');
-  var ifr=document.getElementById('res-ifr');
-  var blk=document.getElementById('res-blocked');
-
-  lbl.textContent=RURL[key].label+' (visite #'+_resStat[key].visits+')';
-  blk.style.display='none';
-  ifr.style.display='block';
-  fa.style.display='flex';
-
-  _frameOk=false;
-  ifr.src='';
-  setTimeout(function(){ifr.src=RURL[key].url;},60);
-  if(_frameT)clearTimeout(_frameT);
-  _frameT=setTimeout(function(){if(!_frameOk)showBlocked();},4500);
-
-  log('RESSOURCE OUVERTE',
-    RURL[key].label+' — visite #'+_resStat[key].visits,'i');
   updLog(); updResSummary();
 }
 
@@ -1943,11 +1984,31 @@ var _wordGoal = 0; /* 0 = pas d'objectif. Ex: 300 pour 300 mots requis */
 /* ═══════════════════════════════════════════════
    ÉCRAN D'ACCUEIL
 ═══════════════════════════════════════════════ */
+function checkStartReady() {
+  const nameInput = document.getElementById('student-name');
+  const chkAgree = document.getElementById('chk-agree');
+  const btnStart = document.getElementById('btn-start');
+  if (nameInput && chkAgree && btnStart) {
+    btnStart.disabled = (nameInput.value.trim().length < 2 || !chkAgree.checked);
+  }
+}
+
 function startExam(){
+  const nameVal = document.getElementById('student-name').value.trim();
+  if (nameVal) {
+    S.name = nameVal;
+    var hdrS = document.getElementById('hdr-student');
+    if (hdrS) hdrS.textContent = '👤 ' + S.name;
+    updSub();
+  }
+
   document.getElementById('welcome').style.display = 'none';
   _apReady = true;
+
+  if (!isResume()) S.t0 = Date.now();
+  
   startClock();
-  log('DÉBUT EXAMEN','L\'étudiant a commencé l\'évaluation.','i');
+  log('DÉBUT EXAMEN','L\'étudiant ('+S.name+') a commencé l\'évaluation.','i');
   /* Photo d'identification après acceptation */
   setTimeout(function(){ capturePhoto('Début examen — identification'); }, 800);
 }
