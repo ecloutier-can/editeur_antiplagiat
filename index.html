@@ -2008,9 +2008,15 @@ function showResModal(res) {
   const desc = document.getElementById('rm-desc');
   const openBtn = document.getElementById('rm-btn-open');
   const iconCont = document.getElementById('rm-icon');
+  const finishBtn = document.querySelector('.rm-btn-finish');
   
   title.textContent = res.title;
-  desc.innerHTML = `Vous consultez actuellement <strong>${res.title}</strong>. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité. Cliquez sur le bouton ci-dessous pour terminer votre session et reprendre votre travail.`;
+  desc.innerHTML = `Vous consultez actuellement <strong>${res.title}</strong>. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité. Cliquez sur le bouton ci-dessous pour ouvrir la ressource.`;
+  
+  // État initial des boutons
+  openBtn.style.display = 'flex';
+  finishBtn.style.display = 'flex';
+  finishBtn.querySelector('span').textContent = "Annuler / Retour à l'éditeur";
   
   // Icône dynamique
   let iconSvg = '';
@@ -2024,7 +2030,25 @@ function showResModal(res) {
   iconCont.innerHTML = iconSvg;
 
   openBtn.onclick = function() {
-    window.open(res.url, 'ressource_auth', 'width=1000,height=750,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
+    _popupWin = window.open(res.url, 'ressource_auth', 'width=1000,height=750,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
+    if(!_popupWin){
+      showToast('⚠️ Autorisez les popups dans votre navigateur.');
+      return;
+    }
+    
+    // Forcer l'étudiant à fermer le popup pour déverrouiller
+    openBtn.style.display = 'none';
+    finishBtn.style.display = 'none';
+    desc.innerHTML = `La ressource <strong>${res.title}</strong> est ouverte dans une fenêtre séparée.<br><br><span style="color:#6ee7b7">Vous devez <strong>fermer cette fenêtre popup</strong> pour déverrouiller l'éditeur.</span>`;
+    
+    // Surveiller la fermeture de la fenêtre
+    let _popupPoll = setInterval(function(){
+      if(!_popupWin || _popupWin.closed){
+        clearInterval(_popupPoll);
+        _popupWin = null;
+        finishRes(); // Fermeture automatique et log
+      }
+    }, 1000);
   };
   
   modal.classList.add('v');
