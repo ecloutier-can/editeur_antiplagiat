@@ -11,8 +11,22 @@
     "enableTimeline": true,
     "timelineSnapshotInterval": 60000,
     "allowedResources": [
-      { "title": "Guide de rédaction", "url": "#" },
-      { "title": "Consignes de l'examen", "url": "#" }
+      { 
+        "id": "usito",
+        "title": "Dictionnaire Usito", 
+        "author": "Université de Sherbrooke",
+        "description": "Dictionnaire de la langue française qui tient compte du contexte québécois et canadien.",
+        "url": "https://usito.usherbrooke.ca/",
+        "icon": "book"
+      },
+      { 
+        "id": "conjugueur",
+        "title": "Le Conjugueur", 
+        "author": "Le Figaro",
+        "description": "Outil complet pour vérifier la conjugaison de tous les verbes de la langue française.",
+        "url": "https://leconjugueur.lefigaro.fr/",
+        "icon": "edit-3"
+      }
     ]
   },
   "ui": {

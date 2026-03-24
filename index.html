@@ -299,50 +299,201 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 
 
 
-/* ── RÉSUMÉ RESSOURCES ──────────────────────────── */
-.rs-row{display:flex;justify-content:space-between;align-items:center;
-  padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:10.5px}
-.rs-row:last-child{border-bottom:none}
-.rs-row.rs-open{background:#e8f5e9;border-radius:3px;padding:4px 5px;
-  border-bottom-color:#a5d6a7}
-.rs-name{font-weight:600;color:#333}
-.rs-stat{color:#555;text-align:right}
-.rs-live{color:#2e7d32;font-size:9px;font-weight:700;
-  background:#c8e6c9;padding:1px 5px;border-radius:8px;margin-left:4px}
+/* ── RESSOURCES MODERNISÉES (Glassmorphism) ───────── */
+#pc-res {
+  background: #0f1624; /* Base sombre profonde */
+  color: #dfe2eb;
+}
 
-/* ── RESSOURCES ────────────────────────────────── */
-#pc-res{flex-direction:column}
-#res-warn{background:var(--warn-lt);border-bottom:2px solid #F5C058;padding:8px 12px;
-  font-size:10px;color:var(--warn);flex-shrink:0;line-height:1.55;
-  display:flex;align-items:flex-start;gap:6px}
-#res-warn svg{width:14px;height:14px;stroke:currentColor;fill:none;
-  stroke-width:2;flex-shrink:0;margin-top:1px}
-#res-warn strong{color:#92400E}
-#res-btn-row{display:flex;gap:8px;padding:10px;flex-shrink:0}
-.res-tab-btn{flex:1;padding:10px 4px;border-radius:var(--radius);
-  border:1.5px solid var(--border);
-  background:var(--card);cursor:pointer;text-align:center;
-  transition:all .15s;box-shadow:var(--shadow-sm)}
-.res-tab-btn:hover{border-color:var(--brand-mid);background:var(--brand-lt);
-  box-shadow:var(--shadow)}
-.res-tab-btn.active{border-color:var(--brand-mid);background:var(--brand-lt)}
-.res-tab-btn svg{display:block;margin:0 auto 5px;width:22px;height:22px;
-  stroke:var(--brand-mid);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
-.res-tab-btn .rb-name{font-size:10px;font-weight:700;color:var(--brand-mid);line-height:1.3}
-.res-tab-btn .rb-desc{font-size:8.5px;color:var(--text-3);margin-top:2px}
-/* Zone de chargement sous les boutons */
-#res-frame-area{flex:1;overflow:hidden;display:none;flex-direction:column}
-#res-frame-hdr{background:#1565c0;color:#fff;padding:4px 8px;font-size:11px;
-  font-weight:600;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-#btn-close-res{background:none;border:none;color:#fff;cursor:pointer;font-size:14px;padding:0 3px}
-#res-ifr{width:100%;flex:1;border:none;display:block}
-#res-blocked{display:none;flex-direction:column;align-items:center;justify-content:center;
-  padding:16px;text-align:center;flex:1}
-#res-blocked p{font-size:11px;color:#555;margin-bottom:10px;line-height:1.5}
-.popup-btn{background:#1565c0;color:#fff;border:none;padding:8px 16px;
-  border-radius:4px;cursor:pointer;font-size:11px}
-.popup-btn:hover{background:#0d47a1}
-#res-blocked small{font-size:9.5px;color:#aaa;margin-top:8px;line-height:1.5}
+#res-modern-warn {
+  margin: 12px;
+  padding: 14px;
+  background: rgba(255, 191, 0, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid rgba(255, 191, 0, 0.2);
+  animation: fadeIn 0.5s ease;
+}
+#res-modern-warn svg {
+  width: 20px;
+  height: 20px;
+  color: #ffbf00; /* Amber */
+  flex-shrink: 0;
+}
+#res-modern-warn div {
+  font-size: 11px;
+  line-height: 1.5;
+  color: #c1c6d7;
+}
+#res-modern-warn strong {
+  color: #ffbf00;
+  display: block;
+  margin-bottom: 2px;
+}
+
+#res-cards-container {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.res-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.res-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(60, 215, 255, 0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.res-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(60, 215, 255, 0.3);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(60, 215, 255, 0.1);
+}
+.res-card:hover::before { opacity: 1; }
+
+.res-card-hdr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+}
+.res-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(60, 215, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3cd7ff;
+}
+.res-card-icon svg { width: 24px; height: 24px; stroke-width: 1.5; }
+
+.res-card-info { flex: 1; }
+.res-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2px;
+}
+.res-card-author {
+  font-size: 10px;
+  color: #8b90a0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.res-card-desc {
+  font-size: 11.5px;
+  color: #c1c6d7;
+  line-height: 1.5;
+  z-index: 1;
+}
+
+.res-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  z-index: 1;
+}
+
+.res-open-btn {
+  background: linear-gradient(135deg, #3cd7ff 0%, #009ebe 100%);
+  color: #003642;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.res-open-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 12px rgba(60, 215, 255, 0.4);
+}
+
+.res-logged-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ffbf00;
+  background: rgba(255, 191, 0, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Zone de résumé (stats) */
+#res-modern-summary {
+  margin: 0 12px 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.res-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border-left: 3px solid #3cd7ff;
+}
+.rsi-name { font-weight: 700; font-size: 11px; color: #fff; }
+.rsi-val { font-size: 10px; color: #8b90a0; margin-top: 2px; }
+.rsi-live-badge {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rsi-live-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #34d399;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #34d399;
+  animation: savePulse 0.8s infinite;
+}
 
 /* ── SOUMETTRE ─────────────────────────────────── */
 #pc-sub{padding:10px;flex:1;overflow-y:auto}
@@ -997,45 +1148,19 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     </div>
 
     
-    <!-- RESSOURCES<!-- RESSOURCES — deux boutons toujours visibles -->
+    <!-- RESSOURCES MODERNISÉES -->
     <div class="pc" id="pc-res">
-      <div id="res-warn"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        <div><strong>Ressources autorisées uniquement</strong><br>
-        Copier/coller depuis ces sites est bloqué dans l'éditeur.</div>
-      </div>
-      <!-- Deux boutons côte à côte, toujours visibles -->
-      <div id="res-btn-row">
-        <button class="res-tab-btn" id="rbtn-conjugueur" onclick="openRes('conjugueur')">
-          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          <span class="rb-name">Le Conjugueur</span>
-          <span class="rb-desc">Le Figaro</span>
-        </button>
-        <button class="res-tab-btn" id="rbtn-usito" onclick="openRes('usito')">
-          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-          <span class="rb-name">Dictionnaire Usito</span>
-          <span class="rb-desc">Université de Sherbrooke</span>
-        </button>
-      </div>
-      <!-- Résumé chrono des sorties -->
-      <div id="res-summary" style="padding:0 8px 4px;flex-shrink:0"></div>
-      <!-- Zone de chargement (apparaît sous les boutons) -->
-      <div id="res-frame-area">
-        <div id="res-frame-hdr">
-          <span id="res-frame-label">Ressource</span>
-          <button id="btn-close-res" onclick="closeRes()" title="Fermer">✕</button>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative">
-          <iframe id="res-ifr"
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  onload="onIfrLoad()" style="flex:1;border:none;display:block"></iframe>
-          <div id="res-blocked">
-            <p>⚠ Ce site ne peut pas s'afficher<br>dans un cadre intégré.</p>
-            <button class="popup-btn" id="btn-popup">Ouvrir dans une fenêtre</button>
-            <small>La fenêtre ouvre uniquement le site autorisé.<br>
-              Toute navigation hors site sera détectée.</small>
-          </div>
+      <div id="res-modern-warn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>Ressources Approuvées</strong>
+          Ces outils sont les seuls autorisés par votre enseignant(e). L'accès et le temps passé sont journalisés.
         </div>
       </div>
+
+      <div id="res-cards-container"></div>
+
+      <div id="res-modern-summary"></div>
     </div>
 
     <!-- SOUMETTRE -->
@@ -1428,25 +1553,50 @@ function initDynamicResources() {
   const config = SCORM.getConfig();
   if (!config || !config.pedagogy.allowedResources) return;
   
-  RURL = {}; // Ensure RURL is empty before populating
-  const btnRow = document.getElementById('res-btn-row');
-  if (btnRow) btnRow.innerHTML = '';
+  RURL = {}; 
+  const container = document.getElementById('res-cards-container');
+  if (!container) return;
+  container.innerHTML = '';
 
   config.pedagogy.allowedResources.forEach((res, idx) => {
-    const id = 'res_' + idx;
+    const id = res.id || 'res_' + idx;
     RURL[id] = { label: res.title, url: res.url };
-    _resStat[id] = { visits: 0, totalMs: 0, lastOpen: null };
+    if (!_resStat[id]) _resStat[id] = { visits: 0, totalMs: 0, lastOpen: null };
     
-    const btn = document.createElement('button');
-    btn.className = 'res-tab-btn';
-    btn.setAttribute('data-res-id', id);
-    btn.onclick = () => openRes(id);
+    const card = document.createElement('div');
+    card.className = 'res-card';
+    card.onclick = () => openRes(id);
+    
+    let iconSvg = '';
+    if (res.icon === 'book') {
+      iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>';
+    } else if (res.icon === 'edit-3') {
+      iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+    } else {
+      iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    }
 
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><path d="M6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>
-      <div class="rb-name">${res.title}</div>
+    card.innerHTML = `
+      <div class="res-card-hdr">
+        <div class="res-card-icon">${iconSvg}</div>
+        <div class="res-card-info">
+          <div class="res-card-title">${res.title}</div>
+          <div class="res-card-author">${res.author || ''}</div>
+        </div>
+      </div>
+      <div class="res-card-desc">${res.description || ''}</div>
+      <div class="res-card-footer">
+        <div class="res-logged-tag">
+          <svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Journalisé
+        </div>
+        <button class="res-open-btn">
+          <span>Ouvrir</span>
+          <svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </button>
+      </div>
     `;
-    btnRow.appendChild(btn);
+    container.appendChild(card);
   });
 }
 
@@ -1857,22 +2007,28 @@ function fmtDur(s){
 
 /* Mise à jour du résumé dans le panneau Ressources */
 function updResSummary(){
-  var el=document.getElementById('res-summary');
+  var el=document.getElementById('res-modern-summary');
   if(!el)return;
   var html='';
   Object.keys(_resStat).forEach(function(k){
     var st=_resStat[k];
-    var live=st.lastOpen?Math.round((Date.now()-st.lastOpen)/1000):0;
-    var total=Math.round(st.totalMs/1000)+live;
-    var open=st.lastOpen;
-    html+='<div class="rs-row'+(open?' rs-open':'')+'">'+
-      '<span class="rs-name">'+(RURL[k] ? RURL[k].label : k)+'</span>'+
-      '<span class="rs-stat">'+
-        '<b>'+st.visits+'</b> visite'+(st.visits!==1?'s':'')+
-        ' — <b>'+fmtDur(total)+'</b>'+(open?' <span class="rs-live">● en cours</span>':'')+'</b>'+
-      '</span>'+
-    '</div>';
+    if (st.visits === 0 && !st.lastOpen) return;
+    
+    var live = st.lastOpen ? Math.round((Date.now() - st.lastOpen) / 1000) : 0;
+    var total = Math.round(st.totalMs / 1000) + live;
+    var isOpen = !!st.lastOpen;
+    
+    html += `
+      <div class="res-stat-item">
+        <div class="rsi-info">
+          <div class="rsi-name">${RURL[k] ? RURL[k].label : k}</div>
+          <div class="rsi-val"><b>${st.visits}</b> visite${st.visits !== 1 ? 's' : ''} — <b>${fmtDur(total)}</b></div>
+        </div>
+        ${isOpen ? '<div class="rsi-live-badge">En cours</div>' : ''}
+      </div>
+    `;
   });
+  if (!html) html = '<div style="text-align:center; opacity:0.5; padding: 10px;">Aucune ressource consultée pour le moment.</div>';
   el.innerHTML=html;
 }
 
