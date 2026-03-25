@@ -241,6 +241,20 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 #photo-grid::-webkit-scrollbar{width:4px}
 #photo-grid::-webkit-scrollbar-thumb{background:#ddd;border-radius:10px}
 #photo-grid::-webkit-scrollbar-track{background:transparent}
+#btn-pause { background: var(--warn); color: white; border: none; padding: 0 12px; border-radius: 4px; font-weight: 600; cursor: pointer; display: none; align-items: center; gap: 5px; height: 32px; font-size: 12px; transition: all 0.2s; }
+#btn-pause:hover { background: #d97706; transform: translateY(-1px); }
+#btn-pause svg { width: 14px; height: 14px; fill: currentColor; }
+
+#pause-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.98); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; backdrop-filter: blur(8px); }
+#pause-overlay h2 { font-size: 32px; margin-bottom: 20px; color: var(--warn); }
+#pause-overlay p { font-size: 16px; opacity: 0.8; margin-bottom: 30px; max-width: 400px; }
+#pause-timer { font-size: 48px; font-weight: 700; font-family: monospace; background: rgba(255, 255, 255, 0.1); padding: 10px 30px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); }
+#btn-resume { margin-top: 40px; padding: 12px 30px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px; }
+
+#btn-voice { display: none; color: #555; }
+#btn-voice.active { color: var(--accent); animation: pulse-red 1.5s infinite; }
+@keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
 #welcome-auth {
   margin: 18px 0;
   text-align: left;
@@ -1127,9 +1141,13 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       Importer
     </button>
     <input type="file" id="file-import" accept=".plagiat" style="display:none" onchange="importPlagiatFile(event)">
-    <button class="hbtn primary" id="btn-save" onclick="manualSave()" title="Sauvegarder et télécharger (.plagiat)">
+    <button class="hbtn primary" id="btn-save" onclick="manualSave()" title="Sauvegarder et télécharger (.plagiat)" aria-label="Sauvegarder localement">
       <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
       Sauvegarder
+    </button>
+    <button id="btn-pause" onclick="togglePause()" title="Prendre une pause autorisée (5 min)" aria-label="Pause autorisée">
+      <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      Pause
     </button>
   </div>
 </div>
@@ -1177,6 +1195,10 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     <button class="tb-btn" onclick="fmt('insertOrderedList')" title="Liste numérotée"><svg viewBox="0 0 24 24"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>
     <button class="tb-btn" onclick="fmt('indent')" title="Augmenter le retrait"><svg viewBox="0 0 24 24"><polyline points="13 8 17 12 13 16"/><line x1="3" y1="12" x2="17" y2="12"/><line x1="21" y1="5" x2="21" y2="19"/></svg></button>
     <button class="tb-btn" onclick="fmt('outdent')" title="Diminuer le retrait"><svg viewBox="0 0 24 24"><polyline points="11 8 7 12 11 16"/><line x1="21" y1="12" x2="7" y2="12"/><line x1="3" y1="5" x2="3" y2="19"/></svg></button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" id="btn-voice" onclick="toggleVoice()" title="Saisie vocale (Accessibilité)" aria-label="Activer la dictée vocale">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    </button>
   </div>
   <div class="tb-sep"></div>
   <div class="tg">
@@ -1356,6 +1378,16 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   </div>
 </div>
 
+  <!-- OVERLAY PAUSE -->
+  <div id="pause-overlay" role="dialog" aria-labelledby="pause-title" aria-modal="true">
+    <h2 id="pause-title">⏸ PAUSE AUTORISÉE</h2>
+    <p>Votre session est suspendue. L'éditeur est verrouillé de manière sécurisée.</p>
+    <div id="pause-timer">05:00</div>
+    <button id="btn-resume" onclick="togglePause()" aria-label="Reprendre l'évaluation">REPRENDRE L'ÉVALUATION</button>
+  </div>
+
+  <div id="toast-container" aria-live="polite"></div>
+
 <div id="modal">
   <div id="mbox">
     <h2 id="m-title">Confirmation</h2>
@@ -1390,6 +1422,11 @@ var _apReady = false;  /* true après le délai de 4s */
 var _photos      = [];    /* {time, reason, dataUrl, screenUrls} — en mémoire seulement */
 var _camStream   = null;
 var _screenStreams = [];   /* tableau de MediaStream (un par écran partagé) */
+var _isPaused    = false;
+var _pauseTimer  = null;
+var _pauseTimeleft = 300; // 5 min en sec
+var _voiceRecog  = null;
+var _isVoiceOn   = false;
 var _screenCount  = 1;    /* nombre d'écrans déclarés par l'étudiant */
 var _screenEnabled = false; /* true si enableScreenCapture activé et consenti */
 var ed = document.getElementById('ed');
@@ -1640,6 +1677,25 @@ function applyConfig(config) {
     if (ruleScreen) ruleScreen.style.display = '';
     if (noteScreen) noteScreen.style.display = '';
     if (agreeScreen) agreeScreen.style.display = 'flex';
+  }
+  /* Éléments de pause et dictée */
+  if(config.ui && config.ui.enableVoiceDictation) {
+    var btnV = document.getElementById('btn-voice');
+    if(btnV) btnV.style.display = 'inline-flex';
+  }
+  if(config.pedagogy && config.pedagogy.authorizedPauseDuration > 0) {
+    var btnP = document.getElementById('btn-pause');
+    if(btnP) btnP.style.display = 'inline-flex';
+    _pauseTimeleft = Math.floor(config.pedagogy.authorizedPauseDuration / 1000);
+  }
+  
+  // Backup auto toutes les X min
+  if(config.security && config.security.autoDownloadInterval > 0){
+    setInterval(function(){
+      if(!S.submitted && _apReady && !_isPaused) {
+        manualSave(true); // true pour mode silencieux
+      }
+    }, config.security.autoDownloadInterval);
   }
 }
 
@@ -1965,11 +2021,13 @@ function importPlagiatFile(event) {
   reader.readAsText(file);
 }
 
-function manualSave() {
+function manualSave(quiet) {
   autoSave();
   exportPlagiatFile();
-  playAlert('save');
-  showToast('Sauvegardé ✓ (Fichier .plagiat téléchargé)');
+  if(!quiet) {
+    playAlert('save');
+    showToast('Sauvegardé ✓ (Fichier .plagiat téléchargé)');
+  }
 }
 function setSave(st){
   var el=document.getElementById('save-ind');
@@ -2038,15 +2096,18 @@ function setupAP(){
   }
 
   document.addEventListener('visibilitychange', function() {
+    if (_isPaused) return;
     if(document.hidden) onAbsentStart('Changement d\'onglet ou réduction');
     else onAbsentEnd('Onglet redevenu visible');
   });
 
   window.addEventListener('blur', function() {
+    if (_isPaused) return;
     onAbsentStart('Perte de focus (clic hors fenêtre)');
   });
 
   window.addEventListener('focus', function() {
+    if (_isPaused) return;
     onAbsentEnd('Fenêtre a retrouvé le focus');
   });
 
@@ -2806,6 +2867,104 @@ document.addEventListener('keydown', function(e){
 window.addEventListener('beforeunload',function(){
   if(!S.submitted){autoSave();SCORM.finish();}
 });
+
+/* ═══════════════════════════════════════════════
+   PAUSE & DICTÉE — Nouvelles Fonctions
+═══════════════════════════════════════════════ */
+function togglePause() {
+  if (S.submitted) return;
+  _isPaused = !_isPaused;
+  const overlay = document.getElementById('pause-overlay');
+  const ed = document.getElementById('ed');
+  const config = SCORM.getConfig();
+  
+  if (_isPaused) {
+    overlay.style.display = 'flex';
+    lockEd(true);
+    log('PAUSE','Début de la pause autorisée.','i');
+    _pauseTimer = setInterval(function() {
+      _pauseTimeleft--;
+      updatePauseUI();
+      if (_pauseTimeleft <= 0) togglePause();
+    }, 1000);
+  } else {
+    overlay.style.display = 'none';
+    lockEd(false);
+    log('PAUSE','Fin de la pause. Reprise du travail.','i');
+    clearInterval(_pauseTimer);
+    _pauseTimeleft = (config.pedagogy.authorizedPauseDuration / 1000) || 300;
+    updatePauseUI();
+  }
+}
+
+function updatePauseUI() {
+  const m = Math.floor(_pauseTimeleft / 60);
+  const s = _pauseTimeleft % 60;
+  var timerEl = document.getElementById('pause-timer');
+  if(timerEl) timerEl.textContent = pad(m) + ':' + pad(s);
+}
+
+function toggleVoice() {
+  if (_isVoiceOn) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast("Dictée vocale non supportée par ce navigateur.");
+    return;
+  }
+  _voiceRecog = new SpeechRecognition();
+  _voiceRecog.lang = 'fr-FR';
+  _voiceRecog.continuous = true;
+  _voiceRecog.interimResults = false;
+  
+  _voiceRecog.onstart = function() {
+    _isVoiceOn = true;
+    document.getElementById('btn-voice').classList.add('active');
+    log('DICTÉE','Saisie vocale autorisée.','i');
+    showToast("Dictée vocale active...");
+  };
+  
+  _voiceRecog.onresult = function(event) {
+    const text = event.results[event.results.length - 1][0].transcript;
+    insertTextAtCursor(text + " ");
+  };
+  
+  _voiceRecog.onerror = function() { stopVoice(); };
+  _voiceRecog.onend = function() { 
+    if(_isVoiceOn) {
+      try { _voiceRecog.start(); } catch(e) {}
+    }
+  };
+  
+  _voiceRecog.start();
+}
+
+function stopVoice() {
+  _isVoiceOn = false;
+  if (_voiceRecog) _voiceRecog.stop();
+  document.getElementById('btn-voice').classList.remove('active');
+  log('DICTÉE','Saisie vocale désactivée.','i');
+}
+
+function insertTextAtCursor(text) {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  range.deleteContents();
+  const textNode = document.createTextNode(text);
+  range.insertNode(textNode);
+  range.setStartAfter(textNode);
+  range.setEndAfter(textNode);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  onCh();
+}
 </script>
 </body>
 </html>

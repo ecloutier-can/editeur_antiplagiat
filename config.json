@@ -6,11 +6,13 @@
     "blockShortcuts": ["F12", "Control+U", "Control+P", "Meta+P", "Control+Shift+I"],
     "typingSpeedLimit": 500,
     "heartbeatInterval": 5000,
-    "enableScreenCapture": true
+    "enableScreenCapture": true,
+    "autoDownloadInterval": 1800000
   },
   "pedagogy": {
     "enableTimeline": true,
     "timelineSnapshotInterval": 60000,
+    "authorizedPauseDuration": 300000,
     "allowedResources": [
       { 
         "id": "usito",
@@ -33,7 +35,8 @@
   "ui": {
     "glassmorphism": true,
     "autoSaveIndicator": true,
-    "connectionStatusIndicator": true
+    "connectionStatusIndicator": true,
+    "enableVoiceDictation": true
   },
   "messages": {
     "connectionLost": "⚠️ Connexion avec le serveur perdue. Vos modifications sont sauvegardées localement.",
