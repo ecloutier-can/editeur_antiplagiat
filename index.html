@@ -1192,11 +1192,6 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
           Sauvegarder
         </button>
       </div>
-      <div class="h-sep"></div>
-      <button class="hbtn primary" id="btn-save" onclick="save()" title="Remettre l'évaluation">
-        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
-        Remettre
-      </button>
       <button id="btn-pause" class="hbtn" style="background:var(--warn);color:#fff" onclick="togglePause()" title="Pause">
         <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
         Pause
@@ -2500,11 +2495,6 @@ function lockEd(lock){
     el.style.opacity = lock ? '.35' : '1';
     el.style.pointerEvents = lock ? 'none' : 'auto';
   });
-  var btnSave = document.getElementById('btn-save');
-  if(btnSave) {
-    btnSave.disabled = lock;
-    btnSave.textContent = lock ? '🔒 Verrouillé' : '💾 Sauvegarder .plagiat';
-  }
   if(S.submitted){
     var btnSub = document.getElementById('btn-sub');
     if(btnSub) {
