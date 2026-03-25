@@ -35,8 +35,7 @@
   "ui": {
     "glassmorphism": true,
     "autoSaveIndicator": true,
-    "connectionStatusIndicator": true,
-    "enableVoiceDictation": true
+    "connectionStatusIndicator": true
   },
   "messages": {
     "connectionLost": "⚠️ Connexion avec le serveur perdue. Vos modifications sont sauvegardées localement.",

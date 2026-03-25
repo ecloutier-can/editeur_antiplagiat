@@ -264,8 +264,6 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 #btn-resume { margin-top: 50px; padding: 16px 40px; background: var(--success); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 18px; transition: 0.3s; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); }
 #btn-resume:hover { background: #059669; transform: scale(1.05); box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4); }
 
-#btn-voice { display: none; color: #555; }
-#btn-voice.active { color: var(--accent); animation: pulse-red 1.5s infinite; }
 @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
 #welcome-auth {
@@ -1153,7 +1151,6 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     </div>
     <div id="hdr-status">
       <span class="hst off" id="cam-status"><span class="hst-dot"></span>Caméra active</span>
-      <span class="hst off" id="mic-status"><span class="hst-dot"></span>Microphone</span>
       <span class="hst off" id="snd-status"><span class="hst-dot"></span>Son</span>
     </div>
   </div>
@@ -1251,10 +1248,6 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     <button class="tb-btn" onclick="fmt('insertOrderedList')" title="Liste numérotée"><svg viewBox="0 0 24 24"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></button>
     <button class="tb-btn" onclick="fmt('indent')" title="Augmenter le retrait"><svg viewBox="0 0 24 24"><polyline points="13 8 17 12 13 16"/><line x1="3" y1="12" x2="17" y2="12"/><line x1="21" y1="5" x2="21" y2="19"/></svg></button>
     <button class="tb-btn" onclick="fmt('outdent')" title="Diminuer le retrait"><svg viewBox="0 0 24 24"><polyline points="11 8 7 12 11 16"/><line x1="21" y1="12" x2="7" y2="12"/><line x1="3" y1="5" x2="3" y2="19"/></svg></button>
-    <div class="tb-sep"></div>
-    <button class="tb-btn" id="btn-voice" onclick="toggleVoice()" title="Saisie vocale (Accessibilité)" aria-label="Activer la dictée vocale">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-    </button>
   </div>
   <div class="tb-sep"></div>
   <div class="tg">
@@ -1489,9 +1482,6 @@ var _screenStreams = [];   /* tableau de MediaStream (un par écran partagé) */
 var _isPaused    = false;
 var _pauseTimer  = null;
 var _pauseTimeleft = 300; // 5 min en sec
-var _voiceRecog  = null;
-var _isVoiceOn   = false;
-var _lastVoiceStart = 0;
 var _screenCount  = 1;    /* nombre d'écrans déclarés par l'étudiant */
 var _screenEnabled = false; /* true si enableScreenCapture activé et consenti */
 var ed = document.getElementById('ed');
@@ -1743,11 +1733,6 @@ function applyConfig(config) {
     if (ruleScreen) ruleScreen.style.display = '';
     if (noteScreen) noteScreen.style.display = '';
     if (agreeScreen) agreeScreen.style.display = 'flex';
-  }
-  /* Éléments de pause et dictée */
-  if(config.ui && config.ui.enableVoiceDictation) {
-    var btnV = document.getElementById('btn-voice');
-    if(btnV) btnV.style.display = 'inline-flex';
   }
   if(config.pedagogy && config.pedagogy.authorizedPauseDuration > 0) {
     var btnP = document.getElementById('btn-pause');
@@ -3005,61 +2990,6 @@ function updatePauseUI() {
   if(timerEl) timerEl.textContent = pad(m) + ':' + pad(s);
 }
 
-function toggleVoice() {
-  if (_isVoiceOn) {
-    stopVoice();
-  } else {
-    startVoice();
-  }
-}
-
-function startVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    showToast("Dictée vocale non supportée par ce navigateur.");
-    return;
-  }
-  _voiceRecog = new SpeechRecognition();
-  _voiceRecog.lang = 'fr-FR';
-  _voiceRecog.continuous = true;
-  _voiceRecog.interimResults = false;
-  
-  _voiceRecog.onstart = function() {
-    _isVoiceOn = true;
-    document.getElementById('btn-voice').classList.add('active');
-    const mic = document.getElementById('mic-status');
-    if(mic) { mic.className = 'hst on'; mic.innerHTML = '<span class="hst-dot"></span>Micro actif'; }
-    log('DICTÉE','Saisie vocale autorisée.','i');
-    showToast("Dictée vocale active...");
-  };
-  
-  _voiceRecog.onresult = function(event) {
-    const text = event.results[event.results.length - 1][0].transcript;
-    insertTextAtCursor(text + " ");
-  };
-  
-  _voiceRecog.onerror = function(e) { 
-    console.error("Voice error:", e);
-    if(e.error !== 'no-speech') stopVoice(); 
-  };
-  _voiceRecog.onend = function() { 
-    if(_isVoiceOn) {
-      try { _voiceRecog.start(); } catch(e) {}
-    }
-  };
-  
-  _lastVoiceStart = Date.now();
-  _voiceRecog.start();
-}
-
-function stopVoice() {
-  _isVoiceOn = false;
-  const mic = document.getElementById('mic-status');
-  if(mic) { mic.className = 'hst off'; mic.innerHTML = '<span class="hst-dot"></span>Microphone'; }
-  if (_voiceRecog) _voiceRecog.stop();
-  document.getElementById('btn-voice').classList.remove('active');
-  log('DICTÉE','Saisie vocale désactivée.','i');
-}
 
 function insertTextAtCursor(text) {
   const selection = window.getSelection();
