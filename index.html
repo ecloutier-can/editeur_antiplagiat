@@ -1609,6 +1609,7 @@ function applyConfig(config) {
   }
   /* Activer les éléments de capture d'écran si configuré */
   if (config.security && config.security.enableScreenCapture) {
+    _screenEnabled = true;
     var ruleScreen = document.getElementById('wc-rule-screen');
     var noteScreen = document.getElementById('welcome-screen-note');
     var agreeScreen = document.getElementById('welcome-screen-agree');
