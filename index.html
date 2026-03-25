@@ -891,8 +891,8 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 
 /* ── MODE FOCUS ────────────────────────────────────── */
 #btn-focus-mode{font-size:10px}
-body.focus-mode #panel{display:none}
-body.focus-mode #ew{flex:1}
+body.focus-mode #panel{display:none !important}
+body.focus-mode #ew{flex:1 !important}
 body.focus-mode #zoom-ctrl{display:flex!important}
 body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   border-color:rgba(255,220,100,.6)}
@@ -1162,7 +1162,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       <div class="tg">
         <button class="hbtn" id="btn-focus-mode" onclick="toggleFocus()" title="Mode focus">
           <svg viewBox="0 0 24 24"><path d="M2 8V4h4M22 8V4h-4M2 16v4h4M22 16v4h-4"/></svg>
-          Focus
+          <span id="btn-focus-mode-txt">Focus</span>
         </button>
         <button class="hbtn" id="btn-fs" onclick="toggleFS()" title="Plein écran">
           <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/></svg>
@@ -2640,11 +2640,12 @@ function showSubmittedOverlay(){
 function toggleFocus(){
   document.body.classList.toggle('focus-mode');
   var btn = document.getElementById('btn-focus-mode');
+  var txt = document.getElementById('btn-focus-mode-txt');
   if(document.body.classList.contains('focus-mode')){
-    btn.textContent = '📋 Panneau';
+    if(txt) txt.textContent = 'Panneau';
     btn.title = 'Afficher le panneau';
   } else {
-    btn.textContent = '👁 Focus';
+    if(txt) txt.textContent = 'Focus';
     btn.title = 'Mode focus — masquer le panneau';
   }
 }
