@@ -1499,22 +1499,32 @@ async function capturePhoto(reason){
 async function captureScreenStream(stream) {
   return new Promise((resolve) => {
     var v = document.createElement('video');
+    v.muted = true;
+    v.playsInline = true;
     v.autoplay = true;
     v.srcObject = stream;
-    v.onplay = function() {
-      // Small delay to ensure frame is painted
+    
+    var timeout = setTimeout(() => { resolve(null); }, 2500);
+
+    v.onloadeddata = function() {
+      v.play().catch(function(){}); // Tenter de forcer la lecture
+      // Délai pour s'assurer que le premier frame réel est décodé et prêt
       setTimeout(function() {
-        var c = document.getElementById('screen-canvas');
-        if(!c) return resolve(null);
-        c.width = 320; 
-        c.height = Math.max(1, Math.round((v.videoHeight / v.videoWidth) * 320)) || 180;
-        var ctx = c.getContext('2d');
-        ctx.drawImage(v, 0, 0, c.width, c.height);
-        resolve(c.toDataURL('image/jpeg', 0.4));
-      }, 50);
+        clearTimeout(timeout);
+        try {
+          var c = document.getElementById('screen-canvas');
+          if(!c) return resolve(null);
+          c.width = 320; 
+          c.height = Math.max(1, Math.round((v.videoHeight / v.videoWidth) * 320)) || 180;
+          var ctx = c.getContext('2d');
+          ctx.drawImage(v, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.4));
+        } catch(err) {
+          resolve(null);
+        }
+      }, 150);
     };
     v.onerror = function() { resolve(null); };
-    setTimeout(() => resolve(null), 2000); // 2s timeout
   });
 }
 
