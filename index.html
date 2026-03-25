@@ -2098,11 +2098,11 @@ function setupAP(){
   }
 
   /* GESTION UNIFIÉE DES ABSENCES (Onglets/Fenêtres) */
-  function onAbsentStart(reason) {
+  function onAbsentStart(reason, isFocusLoss) {
     if(!_apReady || S.submitted || _absentStart) return;
     console.log("Absence détectée:", reason);
     _absentStart = Date.now();
-    S.tabs++; // On incrémente le compteur global d'absences
+    if(isFocusLoss) S.focus++; else S.tabs++;
     log('ABSENCE DÉTECTÉE', reason, 'd');
     playAlert('leave');
     showBanner();
@@ -2125,13 +2125,13 @@ function setupAP(){
 
   document.addEventListener('visibilitychange', function() {
     if (_isPaused) return;
-    if(document.hidden) onAbsentStart('Changement d\'onglet ou réduction');
+    if(document.hidden) onAbsentStart('Changement d\'onglet ou réduction', false);
     else onAbsentEnd('Onglet redevenu visible');
   });
 
   window.addEventListener('blur', function() {
     if (_isPaused) return;
-    onAbsentStart('Perte de focus (clic hors fenêtre)');
+    onAbsentStart('Perte de focus (clic hors fenêtre)', true);
   });
 
   window.addEventListener('focus', function() {
@@ -2198,7 +2198,7 @@ function log(type,detail,sev){
   var n=new Date();
   S.log.push({t:pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds()),
     type:type,detail:detail,sev:sev||'i'});
-  setSave('unsaved');updSub();
+  setSave('unsaved');updSub();updLog();
 }
 function updLog(){
   var bad = S.paste + S.copy + S.tabs + S.focus;
@@ -2444,19 +2444,28 @@ function doSubmit(){
   log('SOUMISSION','Travail soumis dans le carnet de notes Moodle.','i');
   updLog();swP('sub');
 }
-function lockEd(){
-  ed.contentEditable='false';
-  ed.classList.add('locked');
-  /* Désactiver toute la barre d'outils */
+function lockEd(lock){
+  if(lock === undefined) lock = true;
+  ed.contentEditable = lock ? 'false' : 'true';
+  if(lock) ed.classList.add('locked'); else ed.classList.remove('locked');
   document.querySelectorAll('#tb .tb-btn, #tb .tb-sel, #tb .tb-color').forEach(function(el){
-    el.disabled=true; el.style.opacity='.35'; el.style.pointerEvents='none';
+    el.disabled = lock;
+    el.style.opacity = lock ? '.35' : '1';
+    el.style.pointerEvents = lock ? 'none' : 'auto';
   });
-  document.getElementById('btn-save').disabled=true;
-  document.getElementById('btn-save').textContent='🔒 Verrouillé';
+  var btnSave = document.getElementById('btn-save');
+  if(btnSave) {
+    btnSave.disabled = lock;
+    btnSave.textContent = lock ? '🔒 Verrouillé' : '💾 Sauvegarder .plagiat';
+  }
   if(S.submitted){
-    document.getElementById('btn-sub').disabled=true;
-    document.getElementById('btn-sub').textContent='✅ Soumis';
-    document.getElementById('sub-ok').style.display='block';
+    var btnSub = document.getElementById('btn-sub');
+    if(btnSub) {
+      btnSub.disabled = true;
+      btnSub.textContent = '✅ Soumis';
+    }
+    var subOk = document.getElementById('sub-ok');
+    if(subOk) subOk.style.display = 'block';
   }
 }
 
