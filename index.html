@@ -1249,6 +1249,10 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
           Onglets quittés <span class="sc o" id="sc-tab">0</span>
         </div>
         <div class="si">
+          <svg style="color:#B45309" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          Clics hors fenêtre <span class="sc o" id="sc-focus">0</span>
+        </div>
+        <div class="si">
           <svg style="color:#B45309" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           Temps absent <span class="sc o" id="sc-abs">0s</span>
         </div>
@@ -2097,13 +2101,17 @@ function log(type,detail,sev){
   setSave('unsaved');updSub();
 }
 function updLog(){
-  var bad=S.paste+S.copy+S.tabs;
-  var bj=document.getElementById('bdg-j');
-  bj.textContent=bad;bj.className='badge'+(bad>0?'':' z');
-  document.getElementById('sc-paste').textContent=S.paste;
-  document.getElementById('sc-copy').textContent=S.copy;
-  document.getElementById('sc-tab').textContent=S.tabs;
-  var ll=document.getElementById('loglist');
+  var bad = S.paste + S.copy + S.tabs + S.focus;
+  var bj = document.getElementById('bdg-j');
+  if(bj){ bj.textContent = bad; bj.className = 'badge' + (bad > 0 ? '' : ' z'); }
+  
+  var elPaste = document.getElementById('sc-paste'); if(elPaste) elPaste.textContent = S.paste;
+  var elCopy  = document.getElementById('sc-copy');  if(elCopy)  elCopy.textContent  = S.copy;
+  var elTab   = document.getElementById('sc-tab');   if(elTab)   elTab.textContent   = S.tabs;
+  var elFoc   = document.getElementById('sc-focus'); if(elFoc)   elFoc.textContent   = S.focus;
+  var elAbs   = document.getElementById('sc-abs');   if(elAbs)   elAbs.textContent   = Math.round(S.absentMs/1000) + 's';
+
+  var ll = document.getElementById('loglist');
   if(!S.log.length){ll.innerHTML='<div style="text-align:center;color:#aaa;padding:18px;font-size:11px">Aucun événement</div>';return;}
   var h='';
   S.log.slice(-50).reverse().forEach(function(e){
@@ -2436,10 +2444,11 @@ function checkStartReady() {
 }
 
 async function startExam(){
-  if(_screenEnabled && !isResume()) {
+  /* Toujours initier la capture d'écran si activé, car les flux sont perdus au rafraîchissement */
+  if(_screenEnabled) {
     const screensOk = await initScreenCapture();
     if(!screensOk) {
-      alert("Vous devez accepter le partage de tous vos écrans pour commencer l'évaluation.");
+      alert("La capture de tous vos écrans est obligatoire pour accéder à l'évaluation.");
       return;
     }
   }
