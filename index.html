@@ -44,9 +44,12 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--glass-border);
-  padding: 0 24px; height: 64px;
+  padding: 10px 24px; min-height: 64px; height: auto;
   display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
   position: relative; z-index: 100}
+
+#hdr-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; flex: 1; min-width: 300px }
 
 .tg { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05) }
 .h-sep { width: 1px; height: 16px; background: rgba(255,255,255,0.1); margin: 0 4px }
@@ -61,7 +64,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4)}
 #hdr-logo span { font-weight: 700; font-size: 16px; letter-spacing: -0.5px }
 
-#hdr-status { display: flex; align-items: center; gap: 8px }
+#hdr-status { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
 .hst {
   font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 6px;
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
@@ -81,7 +84,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 #hdr-student { font-size: 13px; font-weight: 500; color: var(--text-2) }
 #hdr-timer { font-family: 'Courier New', monospace; font-weight: 700; font-size: 20px; color: #fff; letter-spacing: 1px }
 
-#hdr-btns { display: flex; align-items: center; gap: 12px }
+#hdr-btns { display: flex; align-items: center; gap: 12px; flex-wrap: wrap }
 .h-sep { width: 1px; height: 24px; background: rgba(255,255,255,0.1) }
 .hbtn {
   background: rgba(255,255,255,0.06);
@@ -813,7 +816,8 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 #welcome {
   position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;
   background: radial-gradient(circle at center, var(--surface), var(--bg));
-  display:flex;align-items:center;justify-content:center;padding:20px}
+  display:flex; flex-direction: column; align-items:center;
+  justify-content:flex-start; overflow-y:auto; padding:40px 20px}
 #welcome-box {
   background: var(--glass);
   -webkit-backdrop-filter: blur(30px);
@@ -1154,7 +1158,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     </div>
   </div>
 
-  <div style="display:flex;align-items:center;gap:12px">
+  <div id="hdr-right">
     <div id="hdr-student" title="Étudiant">Chargement...</div>
     <div id="hdr-timer">00:00:00</div>
     <div id="hdr-btns">
