@@ -5,7 +5,8 @@
     "blockContextMenu": true,
     "blockShortcuts": ["F12", "Control+U", "Control+P", "Meta+P", "Control+Shift+I"],
     "typingSpeedLimit": 500,
-    "heartbeatInterval": 5000
+    "heartbeatInterval": 5000,
+    "enableScreenCapture": true
   },
   "pedagogy": {
     "enableTimeline": true,

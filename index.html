@@ -864,6 +864,32 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   font-family:'Segoe UI',Arial,sans-serif;
   pointer-events:none}
 #zoom-ctrl .tb-btn{min-width:24px}
+
+/* ── CAPTURE D'ÉCRAN — Sélecteur & Galerie ── */
+#welcome-screen-note{
+  background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.25);
+  border-radius:8px;padding:10px 12px;font-size:12px;color:#444;
+  margin-top:6px;line-height:1.5}
+#welcome-screen-note strong{color:#4338ca}
+.screen-count-row{display:flex;gap:6px;margin:8px 0 4px}
+.screen-count-btn{
+  flex:1;padding:5px 0;border:1.5px solid #c7d2fe;border-radius:6px;
+  background:#fff;color:#4338ca;font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .15s}
+.screen-count-btn:hover{background:#eef2ff;border-color:#818cf8}
+.screen-count-btn.active{background:#4338ca;color:#fff;border-color:#4338ca}
+#welcome-screen-agree{
+  display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#4338ca;
+  background:rgba(67,56,202,.07);border:1px solid rgba(99,102,241,.3);
+  border-radius:6px;padding:8px 10px;margin-top:4px;cursor:pointer}
+/* Vignette enrichie : webcam + écran(s) côte à côte */
+.cap-pair{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.cap-pair .cap-imgs{display:flex;gap:4px;align-items:flex-start;flex-wrap:wrap}
+.cap-pair .cap-label{font-size:8px;color:#777;line-height:1.2;max-width:200px}
+.screen-thumb img{
+  width:112px;height:63px;border-radius:3px;
+  object-fit:cover;border:1px solid #c7d2fe}
+.screen-thumb-label{font-size:8px;color:#4338ca;text-align:center;max-width:112px}
 </style>
 </head>
 <body>
@@ -880,6 +906,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
 <!-- Webcam elements (hidden) -->
 <video id="cam-video" autoplay playsinline muted></video>
 <canvas id="cam-canvas" width="120" height="90"></canvas>
+<canvas id="screen-canvas" width="320" height="180" style="display:none"></canvas>
 
 
 <!-- ── ÉCRAN D'ACCUEIL ──────────────────────────────── -->
@@ -895,6 +922,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       <div class="wc-rule"><span class="wi">🔀</span><span>Quitter cet onglet sera <strong>journalisé et signalé</strong> à votre enseignant(e).</span></div>
       <div class="wc-rule"><span class="wi">📚</span><span>Seuls le <strong>Conjugueur Le Figaro</strong> et le <strong>Dictionnaire Usito</strong> sont autorisés (onglet Ressources).</span></div>
       <div class="wc-rule"><span class="wi">📷</span><span>Des <strong>photos de surveillance</strong> seront prises aléatoirement pendant l'évaluation.</span></div>
+      <div class="wc-rule" id="wc-rule-screen" style="display:none"><span class="wi">🖥️</span><span>Des <strong>captures d'écran</strong> seront prises simultanément aux photos de surveillance.</span></div>
       <div class="wc-rule"><span class="wi">🔒</span><span>Une fois soumis, votre texte est <strong>définitivement verrouillé</strong>.</span></div>
     </div>
 
@@ -915,9 +943,24 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       Autorisez l'accès lorsque votre navigateur le demande.
     </div>
 
+    <div id="welcome-screen-note" style="display:none">
+      🖥️ <strong>Combien d'écrans utilisez-vous actuellement ?</strong>
+      <div class="screen-count-row">
+        <button class="screen-count-btn active" data-count="1" onclick="setScreenCount(1)">1 écran</button>
+        <button class="screen-count-btn" data-count="2" onclick="setScreenCount(2)">2 écrans</button>
+        <button class="screen-count-btn" data-count="3" onclick="setScreenCount(3)">3 et +</button>
+      </div>
+      <small>Votre navigateur vous demandera de sélectionner chaque écran séparément.</small>
+    </div>
+
     <label id="welcome-agree">
-      <input type="checkbox" id="chk-agree" onchange="document.getElementById('btn-start').disabled=!this.checked">
+      <input type="checkbox" id="chk-agree" onchange="checkStartReady()">
       J'ai lu et j'accepte les règles de cette évaluation.
+    </label>
+
+    <label id="welcome-screen-agree" style="display:none">
+      <input type="checkbox" id="chk-screen" onchange="checkStartReady()">
+      J'accepte que des captures de mes écrans soient prises pendant l'évaluation.
     </label>
 
     <button id="btn-start" disabled onclick="startExam()">
@@ -1336,9 +1379,12 @@ var S = {
   wc:0, cc:0, photoCount:0
 };
 var _absentStart = null;
-var _apReady = false;  /* true après le délai de 4s */  /* timestamp début d'une absence */
-var _photos      = [];    /* {time, reason, dataUrl} — en mémoire seulement */
+var _apReady = false;  /* true après le délai de 4s */
+var _photos      = [];    /* {time, reason, dataUrl, screenUrls} — en mémoire seulement */
 var _camStream   = null;
+var _screenStreams = [];   /* tableau de MediaStream (un par écran partagé) */
+var _screenCount  = 1;    /* nombre d'écrans déclarés par l'étudiant */
+var _screenEnabled = false; /* true si enableScreenCapture activé et consenti */
 var ed = document.getElementById('ed');
 
 /* ═══════════════════════════════════════════════
@@ -1419,17 +1465,28 @@ function setCamStatus(ok,msg){
   else  { el.innerHTML='<span class="hst-dot"></span>'+msg; el.className='hst off'; }
 }
 
-function capturePhoto(reason){
+async function capturePhoto(reason){
   if(!_camStream) return;
   var v=document.getElementById('cam-video');
   var c=document.getElementById('cam-canvas');
   try{
     var ctx=c.getContext('2d');
     ctx.drawImage(v,0,0,120,90);
-    var dataUrl=c.toDataURL('image/jpeg',0.25);
+    var camData=c.toDataURL('image/jpeg',0.25);
     var n=new Date();
     var t=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
-    _photos.push({time:t,reason:reason,dataUrl:dataUrl});
+    
+    var screens = [];
+    if(_screenEnabled && _screenStreams && _screenStreams.length > 0) {
+      for(var i=0; i<_screenStreams.length; i++){
+        if(_screenStreams[i].active){
+           var sData = await captureScreenStream(_screenStreams[i]);
+           if(sData) screens.push(sData);
+        }
+      }
+    }
+
+    _photos.push({time:t,reason:reason,dataUrl:camData,screens:screens});
     if(_photos.length>12) _photos.shift();
     S.photoCount=_photos.length;
     playAlert('photo');
@@ -1437,6 +1494,28 @@ function capturePhoto(reason){
     renderPhotoGallery();
     updSub();
   }catch(e){}
+}
+
+async function captureScreenStream(stream) {
+  return new Promise((resolve) => {
+    var v = document.createElement('video');
+    v.autoplay = true;
+    v.srcObject = stream;
+    v.onplay = function() {
+      // Small delay to ensure frame is painted
+      setTimeout(function() {
+        var c = document.getElementById('screen-canvas');
+        if(!c) return resolve(null);
+        c.width = 320; 
+        c.height = Math.max(1, Math.round((v.videoHeight / v.videoWidth) * 320)) || 180;
+        var ctx = c.getContext('2d');
+        ctx.drawImage(v, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.4));
+      }, 50);
+    };
+    v.onerror = function() { resolve(null); };
+    setTimeout(() => resolve(null), 2000); // 2s timeout
+  });
 }
 
 function scheduleRandCapture(){
@@ -1451,8 +1530,13 @@ function renderPhotoGallery(){
   if(!_photos.length){ grid.innerHTML='<div id="cam-placeholder">Aucune photo encore.</div>'; return; }
   var h='';
   _photos.forEach(function(p){
-    h+='<div class="photo-thumb"><img src="'+p.dataUrl+'" alt="photo">'
-      +'<span>'+esc(p.time)+'<br>'+esc(p.reason.substring(0,18))+'</span></div>';
+    h+='<div class="photo-thumb"><img src="'+p.dataUrl+'" alt="photo">';
+    if(p.screens && p.screens.length > 0){
+      p.screens.forEach(function(s, idx){
+        h+='<img src="'+s+'" alt="ecran" class="screen-thumb" title="Écran '+(idx+1)+'">';
+      });
+    }
+    h+='<span>'+esc(p.time)+'<br>'+esc(p.reason.substring(0,18))+'</span></div>';
   });
   grid.innerHTML=h;
 }
@@ -1522,6 +1606,15 @@ function applyConfig(config) {
     document.title = config.appName;
     var h1 = document.querySelector('#welcome h1');
     if (h1) h1.textContent = '📝 ' + config.appName;
+  }
+  /* Activer les éléments de capture d'écran si configuré */
+  if (config.security && config.security.enableScreenCapture) {
+    var ruleScreen = document.getElementById('wc-rule-screen');
+    var noteScreen = document.getElementById('welcome-screen-note');
+    var agreeScreen = document.getElementById('welcome-screen-agree');
+    if (ruleScreen) ruleScreen.style.display = '';
+    if (noteScreen) noteScreen.style.display = '';
+    if (agreeScreen) agreeScreen.style.display = 'flex';
   }
 }
 
@@ -2289,16 +2382,57 @@ var _wordGoal = 0; /* 0 = pas d'objectif. Ex: 300 pour 300 mots requis */
 /* ═══════════════════════════════════════════════
    ÉCRAN D'ACCUEIL
 ═══════════════════════════════════════════════ */
-function checkStartReady() {
-  const nameInput = document.getElementById('student-name');
-  const chkAgree = document.getElementById('chk-agree');
-  const btnStart = document.getElementById('btn-start');
-  if (nameInput && chkAgree && btnStart) {
-    btnStart.disabled = (nameInput.value.trim().length < 2 || !chkAgree.checked);
+function setScreenCount(n) {
+  _screenCount = n;
+  var btns = document.querySelectorAll('.screen-count-btn');
+  btns.forEach(function(b){
+    if(parseInt(b.getAttribute('data-count'), 10) === n) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+}
+
+async function initScreenCapture() {
+  if (!_screenEnabled) return true;
+  _screenStreams = [];
+  try {
+    for(let i=0; i<_screenCount; i++) {
+      showToast('Partagez l\'écran ' + (i+1) + '/' + _screenCount + '...');
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: 'monitor' },
+        audio: false
+      });
+      _screenStreams.push(stream);
+    }
+    return _screenStreams.length === _screenCount;
+  } catch(e) {
+    console.warn('Erreur ou refus screen capture', e);
+    return false; // refus
   }
 }
 
-function startExam(){
+function checkStartReady() {
+  const nameInput = document.getElementById('student-name');
+  const chkAgree = document.getElementById('chk-agree');
+  const chkScreen = document.getElementById('chk-screen');
+  const btnStart = document.getElementById('btn-start');
+  if (nameInput && chkAgree && btnStart) {
+    let ready = nameInput.value.trim().length >= 2 && chkAgree.checked;
+    if (_screenEnabled && chkScreen) {
+      ready = ready && chkScreen.checked;
+    }
+    btnStart.disabled = !ready;
+  }
+}
+
+async function startExam(){
+  if(_screenEnabled && !isResume()) {
+    const screensOk = await initScreenCapture();
+    if(!screensOk) {
+      alert("Vous devez accepter le partage de tous vos écrans pour commencer l'évaluation.");
+      return;
+    }
+  }
+
   const nameVal = document.getElementById('student-name').value.trim();
   if (nameVal) {
     S.name = nameVal;
@@ -2402,8 +2536,14 @@ function fillPrintFrame(){
   if(_photos.length){
     pw.style.display = 'block';
     pl.innerHTML = _photos.map(function(p){
-      return '<div class="pf-photo"><img src="'+p.dataUrl+'" alt="surveillance">'
-        +'<span>'+esc(p.time)+'<br>'+esc(p.reason)+'</span></div>';
+      let h = '<div class="pf-photo"><img src="'+p.dataUrl+'" alt="surveillance">';
+      if(p.screens && p.screens.length > 0) {
+        p.screens.forEach(function(s, idx){
+          h += '<img src="'+s+'" alt="ecran" title="Écran '+(idx+1)+'">';
+        });
+      }
+      h += '<span>'+esc(p.time)+'<br>'+esc(p.reason)+'</span></div>';
+      return h;
     }).join('');
   } else { pw.style.display = 'none'; }
 
