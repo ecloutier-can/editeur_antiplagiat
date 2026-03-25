@@ -237,7 +237,10 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 /* Photos surveillance */
 #photo-section{border-top:1px solid #eee;padding:6px;flex-shrink:0;background:#fafafa}
 #photo-section h4{font-size:10px;color:#555;margin-bottom:5px;font-weight:600}
-#photo-grid{display:flex;flex-wrap:wrap;gap:4px}
+#photo-grid{display:flex;flex-wrap:wrap;gap:6px;max-height:220px;overflow-y:auto;padding-right:2px}
+#photo-grid::-webkit-scrollbar{width:4px}
+#photo-grid::-webkit-scrollbar-thumb{background:#ddd;border-radius:10px}
+#photo-grid::-webkit-scrollbar-track{background:transparent}
 #welcome-auth {
   margin: 18px 0;
   text-align: left;
@@ -1559,6 +1562,7 @@ function renderPhotoGallery(){
     h+='<span>'+esc(p.time)+'<br>'+esc(p.reason.substring(0,18))+'</span></div>';
   });
   grid.innerHTML=h;
+  grid.scrollTop=grid.scrollHeight;
 }
 
 /* ═══════════════════════════════════════════════
