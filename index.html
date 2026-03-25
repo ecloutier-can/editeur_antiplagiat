@@ -1426,6 +1426,12 @@ function _bip(f,t,d,v,w){
   }catch(e){}
 }
 function playAlert(type){
+  if(!_snd || !_ac) return;
+  // Forcer la reprise du contexte audio si suspendu (nécessaire sur bcp de navigateurs)
+  if(_ac.state === 'suspended') {
+    _ac.resume().then(() => playAlert(type));
+    return;
+  }
   if(type==='leave'){_bip(880,0,.14,.5,'square');_bip(660,.18,.14,.5,'square');_bip(440,.36,.22,.5,'square');}
   else if(type==='blocked'){_bip(200,0,.15,.5,'sawtooth');_bip(160,.18,.18,.5,'sawtooth');}
   else if(type==='submit'){_bip(523,0,.10,.2,'sine');_bip(659,.13,.10,.2,'sine');_bip(784,.26,.15,.2,'sine');_bip(1047,.43,.22,.18,'sine');}
@@ -2001,42 +2007,43 @@ function setupAP(){
     });
   }
 
-  document.addEventListener('visibilitychange',function(){
-    if(!_apReady||S.submitted)return;
-    if(document.hidden){
-      _absentStart=Date.now();
-      S.tabs++;
-      log('ONGLET QUITTÉ','L\'étudiant a quitté la fenêtre d\'évaluation.','d');
-      playAlert('leave');showBanner();
-    }else{
-      if(_absentStart){
-        S.absentMs+=Date.now()-_absentStart;
-        var dur=Math.round((Date.now()-_absentStart)/1000);
-        _absentStart=null;
-        log('RETOUR','Retour après '+dur+'s d\'absence.','i');
-        capturePhoto('Retour après absence ('+dur+'s)');
-      }
-    }
+  /* GESTION UNIFIÉE DES ABSENCES (Onglets/Fenêtres) */
+  function onAbsentStart(reason) {
+    if(!_apReady || S.submitted || _absentStart) return;
+    console.log("Absence détectée:", reason);
+    _absentStart = Date.now();
+    S.tabs++; // On incrémente le compteur global d'absences
+    log('ABSENCE DÉTECTÉE', reason, 'd');
+    playAlert('leave');
+    showBanner();
     updLog();
-  });
-  window.addEventListener('blur',function(){
-    if(!_apReady||S.submitted)return;
-    if(!_absentStart) _absentStart=Date.now();
-    S.focus++;
-    log('INTERACTION HORS ÉDITEUR','Clic détecté en dehors de la fenêtre d\'évaluation.','w');
-    playAlert('leave');showBanner();updLog();
-  });
-  window.addEventListener('focus',function(){
+  }
+
+  function onAbsentEnd(reason) {
+    if(!_apReady || !_absentStart) return;
+    console.log("Retour détecté:", reason);
+    var now = Date.now();
+    var ms = now - _absentStart;
+    S.absentMs += ms;
+    var dur = (ms / 1000).toFixed(1);
+    _absentStart = null;
+    log('RETOUR ÉDITEUR', 'Retour après ' + dur + 's (' + reason + ').', 'i');
     hideBanner();
-    if(!_apReady) return;
-    if(_absentStart&&!document.hidden){
-      var dur=Math.round((Date.now()-_absentStart)/1000);
-      S.absentMs+=Date.now()-_absentStart;
-      _absentStart=null;
-      log('RETOUR ÉDITEUR','Retour dans la fenêtre après '+dur+'s.','i');
-      capturePhoto('Retour éditeur ('+dur+'s)');
-      updLog();
-    }
+    capturePhoto('Retour après ' + dur + 's');
+    updLog();
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if(document.hidden) onAbsentStart('Changement d\'onglet ou réduction');
+    else onAbsentEnd('Onglet redevenu visible');
+  });
+
+  window.addEventListener('blur', function() {
+    onAbsentStart('Perte de focus (clic hors fenêtre)');
+  });
+
+  window.addEventListener('focus', function() {
+    onAbsentEnd('Fenêtre a retrouvé le focus');
   });
 
   // 2. Blocage des Raccourcis Système
