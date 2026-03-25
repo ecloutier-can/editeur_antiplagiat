@@ -46,9 +46,9 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
   background: var(--brand);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  color:#fff;padding:0 12px;display:flex;align-items:center;
-  justify-content:space-between;height:52px;flex-shrink:0;gap:10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2)}
+  color:#fff;padding:8px 12px;display:flex;align-items:center;
+  justify-content:space-between;height:auto;flex-shrink:0;gap:12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);flex-wrap:wrap}
 
 #hdr-left{display:flex;align-items:center;gap:10px;flex-shrink:0}
 
@@ -108,7 +108,7 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 #tb{
   background:var(--card);border-bottom:1px solid var(--border);
   padding:4px 8px;display:flex;flex-wrap:wrap;align-items:center;
-  gap:2px;flex-shrink:0;box-shadow:0 1px 3px rgba(27,58,107,.06)}
+  gap:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(27,58,107,.06)}
 .tb-sep{width:1px;height:22px;background:var(--border);margin:0 4px}
 .tg{display:flex;align-items:center;gap:2px}
 .tb-btn{
@@ -231,6 +231,8 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 .le.i{background:var(--success-lt);border-color:#A7D7B8;border-left-color:var(--success)}
 .lt{font-weight:700;font-size:8.5px;text-transform:uppercase;letter-spacing:.5px}
 .le.d .lt{color:var(--accent)}.le.w .lt{color:var(--warn)}.le.i .lt{color:var(--success)}
+.le.p{background:#eef2ff;border-color:#c7d2fe;border-left-color:#6366f1}
+.le.p .lt{color:#4f46e5}
 .ltime{font-size:9px;color:var(--text-3);margin-right:4px}
 .ldtl{color:var(--text-2);margin-top:2px;font-size:9.5px;word-break:break-word;line-height:1.45}
 
@@ -541,9 +543,9 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
 /* ── STATUS BAR ──────────────────────────────────── */
 #sbar{
   background:linear-gradient(135deg,var(--brand) 0%,var(--brand-mid) 100%);
-  color:rgba(255,255,255,.85);padding:3px 12px;
+  color:rgba(255,255,255,.85);padding:8px 12px;
   display:flex;justify-content:space-between;align-items:center;
-  font-size:10px;flex-shrink:0;gap:8px}
+  font-size:10.5px;flex-shrink:0;gap:12px;flex-wrap:wrap}
 #save-ind.saved{color:#6ee7b7}
 #save-ind.unsaved{color:#FCD34D}
 #save-ind.saving{color:#93C5FD;animation:savePulse .7s ease infinite}
@@ -598,6 +600,32 @@ body{font-family:-apple-system,'Segoe UI',Arial,sans-serif;font-size:13px;
   justify-content: center;
   color: #fff;
   border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── RESPONSIVE ────────────────────────────────── */
+@media (max-width: 1024px) {
+  #panel { width: 300px; }
+}
+@media (max-width: 900px) {
+  #hdr-logo-text { display: none; }
+  #hdr-sep { display: none; }
+  #panel { width: 260px; }
+}
+@media (max-width: 750px) {
+  #hdr-status { order: 2; width: 100%; justify-content: flex-start; margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
+  #hdr-left { order: 1; }
+  #hdr-btns { order: 1; }
+  #panel { width: 220px; }
+  .ptab .tl { display: none; }
+  .ptab svg { margin-bottom: 0; }
+  #tb { gap: 6px; }
+}
+@media (max-width: 650px) {
+  #panel { display: none; }
+  #hdr { padding: 8px; }
+  #hdr-student { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tg { flex-shrink: 0; }
+  #tb button { min-width: 32px; height: 32px; }
 }
 .res-modal-icon svg { width: 32px; height: 32px; stroke-width: 1.5; }
 .res-modal-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 10px; letter-spacing: -0.5px; }
@@ -2881,7 +2909,7 @@ function togglePause() {
   if (_isPaused) {
     overlay.style.display = 'flex';
     lockEd(true);
-    log('PAUSE','Début de la pause autorisée.','i');
+    log('PAUSE','Début de la pause autorisée.','p');
     _pauseTimer = setInterval(function() {
       _pauseTimeleft--;
       updatePauseUI();
@@ -2890,7 +2918,7 @@ function togglePause() {
   } else {
     overlay.style.display = 'none';
     lockEd(false);
-    log('PAUSE','Fin de la pause. Reprise du travail.','i');
+    log('PAUSE','Fin de la pause. Reprise du travail.','p');
     clearInterval(_pauseTimer);
     _pauseTimeleft = (config.pedagogy.authorizedPauseDuration / 1000) || 300;
     updatePauseUI();
