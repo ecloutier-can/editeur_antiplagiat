@@ -1115,6 +1115,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       <tr><td class="pl">Usito — visites</td>      <td class="pv" id="pf-usito-v">0</td>
           <td class="pl">Durée Usito</td>          <td class="pv" id="pf-usito-t">0s</td></tr>
     </table>
+  </div>
 
   <!-- TEXTE DE L'ÉTUDIANT -->
   <div class="pf-sec-title">Texte rédigé</div>
@@ -1486,6 +1487,7 @@ var _pauseTimer  = null;
 var _pauseTimeleft = 300; // 5 min en sec
 var _voiceRecog  = null;
 var _isVoiceOn   = false;
+var _lastVoiceStart = 0;
 var _screenCount  = 1;    /* nombre d'écrans déclarés par l'étudiant */
 var _screenEnabled = false; /* true si enableScreenCapture activé et consenti */
 var ed = document.getElementById('ed');
@@ -1707,7 +1709,7 @@ window.addEventListener('load', function() {
   /* 1. Initialisation SCORM */
   const isSCORM = SCORM.init();
   
-  /* 2. Écouter le chargement de la config */
+  /* 2. Écouter le chargement de la config - UNE SEULE FOIS */
   window.addEventListener('scorm_config_ready', function(e) {
     const config = e.detail;
     applyConfig(config);
@@ -1853,11 +1855,17 @@ function startHeartbeat() {
     const sText = document.querySelector('.status-text');
     const status = SCORM.get('cmi.core.lesson_status');
     
-    if (status === "" && SCORM.init() === false) {
-      if (sDot) sDot.style.background = "#e74c3c";
-      if (sText) sText.textContent = "CONNEXION PERDUE";
-      showToast(config.messages.connectionLost);
-    } else {
+    if (status === "" && !SCORM.isStandalone()) {
+      const isOk = SCORM.init();
+      if (isOk === false) {
+        if (sDot) sDot.style.background = "#e74c3c";
+        if (sText) sText.textContent = "CONNEXION PERDUE";
+        showToast(config.messages.connectionLost);
+      } else {
+        if (sDot) sDot.style.background = "#2ecc71";
+        if (sText) sText.textContent = "Connecté à Moodle";
+      }
+    } else if (!SCORM.isStandalone()) {
       if (sDot) sDot.style.background = "#2ecc71";
       if (sText) sText.textContent = "Connecté à Moodle";
     }
@@ -2175,7 +2183,6 @@ function setupAP(){
     else onAbsentEnd('Onglet redevenu visible');
   });
 
-  var _lastVoiceStart = 0;
   window.addEventListener('blur', function() {
     if (_isPaused) return;
     // Ignorer le blur si le micro vient d'être activé (évite bug permission)
