@@ -2102,10 +2102,21 @@ function setupAP(){
     if(!_apReady || S.submitted || _absentStart) return;
     console.log("Absence détectée:", reason);
     _absentStart = Date.now();
-    if(isFocusLoss) S.focus++; else S.tabs++;
-    log('ABSENCE DÉTECTÉE', reason, 'd');
+    
+    if(isFocusLoss) {
+      S.focus++;
+      log('SORTIE DÉTECTÉE', reason, 'd');
+    } else {
+      S.tabs++;
+      log('NAV. ONGLET', reason, 'd');
+    }
+    
     playAlert('leave');
     showBanner();
+    
+    // Capture d'écran immédiate (preuve visuelle du bureau/URL)
+    capturePhoto('Départ : ' + reason);
+    
     updLog();
   }
 
@@ -2117,9 +2128,12 @@ function setupAP(){
     S.absentMs += ms;
     var dur = (ms / 1000).toFixed(1);
     _absentStart = null;
-    log('RETOUR ÉDITEUR', 'Retour après ' + dur + 's (' + reason + ').', 'i');
+    
+    const type = reason.includes('Onglet') ? 'RETOUR (ONGLET)' : 'RETOUR (FOCUS)';
+    log(type, 'Retour après ' + dur + 's (' + reason + ').', 'i');
+    
     hideBanner();
-    capturePhoto('Retour après ' + dur + 's');
+    capturePhoto('Retour : ' + reason + ' (' + dur + 's)');
     updLog();
   }
 
