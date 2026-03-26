@@ -2191,6 +2191,19 @@ function setupAP(){
     onAbsentEnd('Retour application (focus)');
   }, true);
 
+  /* Bogue SCORM/Moodle : Boucle active de vérification du focus (Polling) */
+  setInterval(function() {
+    if(!_apReady || S.submitted || _apMode !== 'playing') return;
+
+    if (document.hidden) {
+      onAbsentStart('Onglet caché ou fenêtre réduite (Détection active)', false);
+    } else if (!document.hasFocus()) {
+      onAbsentStart('Perte de focus ou d\'application (Détection active)', true);
+    } else {
+      onAbsentEnd('Retour application (Détection active)');
+    }
+  }, 1000);
+
   // 2. Blocage des Raccourcis Système
   const blockedShortcuts = config.security.blockShortcuts || [];
   document.addEventListener('keydown',function(e){
