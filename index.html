@@ -845,13 +845,27 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 
 .wc-section {
   background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px;
-  margin-bottom: 32px; border: 1px solid rgba(255,255,255,0.05)}
-.wc-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); display: flex; align-items: center; gap: 8px }
-.wc-rule { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 14px; color: var(--text-2) }
-.wc-rule strong { color: var(--text) }
-.wi { font-size: 18px; filter: grayscale(1) opacity(0.8) }
+  margin-bottom: 32px; border: 1px solid rgba(255,255,255,0.05)
+}
+.wc-cards { display:flex; gap:16px; margin-bottom: 24px }
+.wc-card { flex:1; background:var(--bg); border:1px solid var(--border); padding:16px; border-radius:12px }
+.wc-card-title { font-weight:700; color:var(--text); margin-bottom:8px; font-size:15px }
+.wc-card p { font-size:13px; color:var(--text-3); margin:0; line-height:1.5 }
 
-.wc-save-info { font-size: 13px; color: var(--text-3); line-height: 1.6; margin-bottom: 32px; padding: 0 8px }
+.wc-checklist { background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:24px; box-shadow:0 4px 12px rgba(0,0,0,0.03) }
+.wc-checklist h3 { font-size:16px; margin-top:0; margin-bottom:16px; color:var(--text) }
+.cl-item { display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid var(--border) }
+.cl-item:last-child { border-bottom:none; padding-bottom:0 }
+.cl-left { flex:1 }
+.cl-status { width:60px; display:flex; justify-content:flex-end; align-items:center }
+.cl-btn { background:var(--brand-lt); color:var(--brand-mid); border:none; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px }
+.cl-btn:hover { background:rgba(79, 70, 229, 0.15) }
+.cl-btn:disabled { opacity:0.5; cursor:not-allowed }
+.cl-desc { font-size:12px; color:var(--text-3); display:block; margin-top:6px }
+
+#cam-preview-bubble { width:40px; height:40px; border-radius:50%; background:#eee; overflow:hidden; display:none; border:2px solid var(--success) }
+#cam-preview-bubble video { width:100%; height:100%; object-fit:cover }
+.st-icon { font-size:24px; display:none }
 #welcome-auth { margin-bottom: 32px }
 #welcome-auth label { display: block; margin-bottom: 12px; font-weight: 600; color: var(--text) }
 #student-name {
@@ -987,65 +1001,68 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
 <!-- ── ÉCRAN D'ACCUEIL ──────────────────────────────── -->
 <div id="welcome">
   <div id="welcome-box">
-    <h1>📝 Éditeur de texte sécurisé</h1>
-    <div class="wc-sub">Évaluation de rédaction — Moodle 4.5</div>
-    <div class="wc-name-badge" id="wc-name">Chargement…</div>
-
-    <div class="wc-section">
-      <h3>📋 Règles de l'évaluation</h3>
-      <div class="wc-rule"><span class="wi">🚫</span><span>Le <strong>copier-coller</strong> est désactivé. Vous devez rédiger vous-même.</span></div>
-      <div class="wc-rule"><span class="wi">🔀</span><span>Quitter cet onglet sera <strong>journalisé et signalé</strong> à votre enseignant(e).</span></div>
-      <div class="wc-rule"><span class="wi">📚</span><span>Seuls le <strong>Conjugueur Le Figaro</strong> et le <strong>Dictionnaire Usito</strong> sont autorisés (onglet Ressources).</span></div>
-      <div class="wc-rule"><span class="wi">📷</span><span>Des <strong>photos de surveillance</strong> seront prises aléatoirement pendant l'évaluation.</span></div>
-      <div class="wc-rule" id="wc-rule-screen" style="display:none"><span class="wi">🖥️</span><span>Des <strong>captures d'écran</strong> seront prises simultanément aux photos de surveillance.</span></div>
-      <div class="wc-rule"><span class="wi">🔒</span><span>Une fois soumis, votre texte est <strong>définitivement verrouillé</strong>.</span></div>
+    <h1>📝 Éditeur d'évaluation sécurisée</h1>
+    <div class="wc-sub" style="margin-bottom:12px">Évaluation de rédaction — Moodle 4.5</div>
+    
+    <div id="welcome-auth" style="text-align:center; margin-bottom:24px;">
+      <input type="text" id="student-name" placeholder="Votre Prénom et Nom" oninput="checkStartReady()" style="text-align:center; max-width:300px">
     </div>
 
-    <div class="wc-save-info">
-      💾 <strong>Où s'enregistre votre travail ?</strong><br>
-      Votre texte est sauvegardé <strong>automatiquement toutes les 30 secondes</strong> dans deux endroits :<br>
-      • <strong>Sur cet ordinateur</strong> (protection contre les pannes) — bouton 💾 pour sauvegarder manuellement<br>
-      • <strong>Dans Moodle</strong> (base de données de votre établissement) — accessible à votre enseignant(e)
-    </div>
-
-    <div id="welcome-auth">
-      <label for="student-name">Indiquez votre nom pour commencer :</label>
-      <input type="text" id="student-name" placeholder="Prénom Nom" oninput="checkStartReady()">
-    </div>
-
-    <div id="welcome-cam-note">
-      📷 La caméra de votre appareil sera utilisée pour la surveillance visuelle.
-      Autorisez l'accès lorsque votre navigateur le demande.
-    </div>
-
-    <div id="welcome-screen-note" style="display:none">
-      🖥️ <strong>Combien d'écrans utilisez-vous actuellement ?</strong>
-      <div class="screen-count-row">
-        <button class="screen-count-btn active" data-count="1" onclick="setScreenCount(1)">1 écran</button>
-        <button class="screen-count-btn" data-count="2" onclick="setScreenCount(2)">2 écrans</button>
-        <button class="screen-count-btn" data-count="3" onclick="setScreenCount(3)">3 et +</button>
+    <div class="wc-cards">
+      <div class="wc-card">
+        <div class="wc-card-title">💾 Sauvegarde Garantie</div>
+        <p>Détendez-vous ! Quoi qu'il arrive, votre progression est chiffrée et sauvegardée automatiquement sur cet ordinateur à chaque touche tapée.</p>
       </div>
-      <small>Votre navigateur vous demandera de sélectionner chaque écran séparément.</small>
+      <div class="wc-card">
+        <div class="wc-card-title">⚖️ Intégrité & Équité</div>
+        <p>Pour garantir la valeur de votre évaluation, le copier-coller est bloqué. Les sorties de l'examen sont journalisées.</p>
+      </div>
     </div>
 
-    <label id="welcome-agree">
-      <input type="checkbox" id="chk-agree" onchange="checkStartReady()">
-      J'ai lu et j'accepte les règles de cette évaluation.
-    </label>
+    <div class="wc-checklist">
+      <h3>Vérification du système (Obligatoire)</h3>
+      
+      <label class="cl-item">
+        <div class="cl-left">
+          <input type="checkbox" id="chk-agree" onchange="checkStartReady()" style="margin-right:8px; transform:scale(1.2)">
+          <span style="font-size:14px; color:var(--text-2); font-weight:500;">Je m'engage à rédiger ce travail moi-même, conformément aux règles du Cégep.</span>
+        </div>
+        <div class="cl-status"><span class="st-icon" id="st-1-icon">✅</span></div>
+      </label>
 
-    <label id="welcome-screen-agree" style="display:none">
-      <input type="checkbox" id="chk-screen" onchange="checkStartReady()">
-      J'accepte que des captures de mes écrans soient prises pendant l'évaluation.
-    </label>
+      <div class="cl-item">
+        <div class="cl-left">
+          <button class="cl-btn" id="btn-cam" onclick="testCameraPreflight()">📸 Tester ma caméra</button>
+          <span class="cl-desc">Sera utilisée en toile de fond pour l'équité de l'examen.</span>
+        </div>
+        <div class="cl-status">
+          <div id="cam-preview-bubble"><video id="cam-preview-vid" autoplay playsinline muted></video></div>
+          <span class="st-icon" id="st-2-icon">✅</span>
+        </div>
+      </div>
 
-    <button id="btn-start" disabled onclick="startExam()">
-      ✅ Commencer l'évaluation
-    </button>
-    <div id="draft-restore-zone" style="margin-top:12px;display:none;">
-      <button onclick="restoreDraftLocal()" style="background:var(--text-2);font-size:13px;padding:10px 16px;">
-        🔄 Restaurer une session inachevée
+      <div class="cl-item" id="cl-step3" style="display:none">
+        <div class="cl-left">
+          <div style="margin-bottom:8px; font-size:14px; font-weight:600; color:var(--text)">Avez-vous un deuxième écran branché ?</div>
+          <label style="margin-right:16px; font-size:14px"><input type="radio" name="has2" value="no" onchange="toggleScreenBtn()"> Non (1 écran)</label>
+          <label style="font-size:14px"><input type="radio" name="has2" value="yes" onchange="toggleScreenBtn()"> Oui (2 écrans)</label>
+          <div style="margin-top:12px">
+            <button class="cl-btn" id="btn-screen" onclick="testScreenPreflight()" disabled>🖥️ Partager mon écran</button>
+          </div>
+        </div>
+        <div class="cl-status"><span class="st-icon" id="st-3-icon">✅</span></div>
+      </div>
+    </div>
+
+    <div id="draft-restore-zone" style="margin-top:12px;display:none;text-align:center;">
+      <button onclick="restoreDraftLocal()" style="background:var(--text-3);color:#fff;font-size:13px;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;margin-bottom:16px;">
+        🔄 Restaurer une session inachevée (Panne)
       </button>
     </div>
+
+    <button id="btn-start" disabled onclick="startExamReal()">
+      🔒 Vérifications requises...
+    </button>
   </div>
 </div>
 
@@ -1735,11 +1752,9 @@ function applyConfig(config) {
   if (config.security && config.security.enableScreenCapture) {
     _screenEnabled = true;
     var ruleScreen = document.getElementById('wc-rule-screen');
-    var noteScreen = document.getElementById('welcome-screen-note');
-    var agreeScreen = document.getElementById('welcome-screen-agree');
+    var step3 = document.getElementById('cl-step3');
     if (ruleScreen) ruleScreen.style.display = '';
-    if (noteScreen) noteScreen.style.display = '';
-    if (agreeScreen) agreeScreen.style.display = 'flex';
+    if (step3) step3.style.display = 'flex';
   }
   if(config.pedagogy && config.pedagogy.authorizedPauseDuration > 0) {
     var btnP = document.getElementById('btn-pause');
@@ -2691,58 +2706,103 @@ var _wordGoal = 0; /* 0 = pas d'objectif. Ex: 300 pour 300 mots requis */
 /* ═══════════════════════════════════════════════
    ÉCRAN D'ACCUEIL
 ═══════════════════════════════════════════════ */
-function setScreenCount(n) {
-  _screenCount = n;
-  var btns = document.querySelectorAll('.screen-count-btn');
-  btns.forEach(function(b){
-    if(parseInt(b.getAttribute('data-count'), 10) === n) b.classList.add('active');
-    else b.classList.remove('active');
-  });
-}
-
-async function initScreenCapture() {
-  if (!_screenEnabled) return true;
-  _screenStreams = [];
-  try {
-    for(let i=0; i<_screenCount; i++) {
-      showToast('Partagez l\'écran ' + (i+1) + '/' + _screenCount + '...');
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: 'monitor' },
-        audio: false
-      });
-      _screenStreams.push(stream);
-    }
-    return _screenStreams.length === _screenCount;
-  } catch(e) {
-    console.warn('Erreur ou refus screen capture', e);
-    return false; // refus
-  }
-}
+let _camTestedOk = false;
+let _screenTestedOk = false;
 
 function checkStartReady() {
   const nameInput = document.getElementById('student-name');
   const chkAgree = document.getElementById('chk-agree');
-  const chkScreen = document.getElementById('chk-screen');
   const btnStart = document.getElementById('btn-start');
+  
   if (nameInput && chkAgree && btnStart) {
     let ready = nameInput.value.trim().length >= 2 && chkAgree.checked;
-    if (_screenEnabled && chkScreen) {
-      ready = ready && chkScreen.checked;
+    
+    // Step 2 : Caméra obligatoire
+    ready = ready && _camTestedOk;
+    
+    // Step 3 : Capture d'écrans (si activé)
+    const step3 = document.getElementById('cl-step3');
+    if (step3 && step3.style.display !== 'none') {
+      ready = ready && _screenTestedOk;
     }
-    btnStart.disabled = !ready;
+    
+    if (ready) {
+      btnStart.disabled = false;
+      btnStart.innerHTML = '🚀 Démarrer l\'évaluation';
+    } else {
+      btnStart.disabled = true;
+      btnStart.innerHTML = '🔒 Vérifications requises...';
+    }
   }
 }
 
-async function startExam(){
-  /* Toujours initier la capture d'écran si activé, car les flux sont perdus au rafraîchissement */
-  if(_screenEnabled) {
-    const screensOk = await initScreenCapture();
-    if(!screensOk) {
-      alert("La capture de tous vos écrans est obligatoire pour accéder à l'évaluation.");
-      return;
+async function testCameraPreflight() {
+  const btn = document.getElementById('btn-cam');
+  btn.textContent = 'Connexion...';
+  btn.disabled = true;
+  try {
+    _camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    let vid = document.getElementById('cam-video');
+    if (vid) vid.srcObject = _camStream;
+    
+    let prevVid = document.getElementById('cam-preview-vid');
+    if (prevVid) prevVid.srcObject = _camStream;
+    
+    document.getElementById('cam-preview-bubble').style.display = 'block';
+    document.getElementById('st-2-icon').style.display = 'inline';
+    btn.style.display = 'none';
+    _camTestedOk = true;
+    checkStartReady();
+  } catch (err) {
+    alert("Impossible d'accéder à la caméra. Vérifiez les permissions de votre navigateur.");
+    btn.textContent = '📸 Réessayer la caméra';
+    btn.disabled = false;
+  }
+}
+
+function toggleScreenBtn() {
+  const btn = document.getElementById('btn-screen');
+  btn.disabled = false;
+  const radios = document.getElementsByName('has2');
+  for (let i=0; i<radios.length; i++) {
+    if (radios[i].checked) {
+      _screenCount = (radios[i].value === 'yes') ? 2 : 1;
     }
   }
+  btn.textContent = _screenCount === 2 ? '🖥️ Partager mes 2 écrans' : '🖥️ Partager mon écran';
+}
 
+async function testScreenPreflight() {
+  const btn = document.getElementById('btn-screen');
+  btn.textContent = 'Connexion...';
+  btn.disabled = true;
+  _screenStreams = [];
+  try {
+    for(let i=0; i<_screenCount; i++){
+       showToast('Partagez l\'écran ' + (i+1) + '/' + _screenCount + '...');
+       let stream = await navigator.mediaDevices.getDisplayMedia({
+         video: { displaySurface: 'monitor' },
+         audio: false
+       });
+       _screenStreams.push(stream);
+    }
+    if (_screenStreams.length === _screenCount) {
+      _screenEnabled = true;
+      _screenTestedOk = true;
+      btn.style.display = 'none';
+      document.getElementById('st-3-icon').style.display = 'inline';
+      checkStartReady();
+    } else {
+      throw new Error("Missing stream");
+    }
+  } catch (err) {
+    alert("Vous devez accepter le partage d'écran complet pour continuer.");
+    btn.textContent = _screenCount === 2 ? '🖥️ Réessayer (2 écrans)' : '🖥️ Réessayer (1 écran)';
+    btn.disabled = false;
+  }
+}
+
+async function startExamReal(){
   const nameVal = document.getElementById('student-name').value.trim();
   if (nameVal) {
     S.name = nameVal;
@@ -2758,7 +2818,7 @@ async function startExam(){
   
   startClock();
   log('DÉBUT EXAMEN','L\'étudiant ('+S.name+') a commencé l\'évaluation.','i');
-  /* Photo d'identification après acceptation */
+  /* Photo d'identification (La caméra tourne déjà grâce au pre-flight !) */
   setTimeout(function(){ capturePhoto('Début examen — identification'); }, 800);
 }
 
