@@ -207,7 +207,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 .pc.on{display:flex}
 
 /* ── STATS & JOURNAL ─────────────────────────────────── */
-#stats{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;background:rgba(0,0,0,0.02)}
+#stats{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;background:rgba(0,0,0,0.02);max-height:130px;overflow-y:auto;border-bottom:1px solid var(--border)}
 .si{font-size:10px;display:flex;flex-direction:column;gap:4px;
   background:var(--card);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:8px;color:var(--text-3);transition:0.2s}
@@ -2230,7 +2230,7 @@ function setupAP(){
 
   /* Bogue SCORM/Moodle : Boucle active de vérification du focus (Polling) */
   setInterval(function() {
-    if(!_apReady || S.submitted || _apMode !== 'playing') return;
+    if(!_apReady || S.submitted || _isPaused) return;
 
     if (document.hidden) {
       onAbsentStart('Onglet caché ou fenêtre réduite (Détection active)', false);
