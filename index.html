@@ -2122,38 +2122,42 @@ function setupAP(){
   }
 
   /* GESTION UNIFIÉE DES ABSENCES (Onglets/Fenêtres) */
+  var _absentFocusLogged = false;
+  var _absentTabLogged = false;
+
   function onAbsentStart(reason, isFocusLoss) {
-    if(!_apReady || S.submitted || _absentStart) return;
-    console.log("Absence détectée:", reason);
-    _absentStart = Date.now();
-    
-    if(isFocusLoss) {
+    if(!_apReady || S.submitted || _isPaused) return;
+
+    if(isFocusLoss && !_absentFocusLogged) {
       S.focus++;
-      log('SORTIE DÉTECTÉE', reason, 'blur');
-    } else {
+      log('SORTIE APPLICATION', reason, 'blur');
+      _absentFocusLogged = true;
+    } else if(!isFocusLoss && !_absentTabLogged) {
       S.tabs++;
       log('NAV. ONGLET', reason, 'tabs');
+      _absentTabLogged = true;
     }
-    
+
+    if(_absentStart) return;
+    _absentStart = Date.now();
     playAlert('leave');
     showBanner();
-    
-    // Capture d'écran immédiate (preuve visuelle du bureau/URL)
     capturePhoto('Départ : ' + reason);
-    
     updLog();
   }
 
   function onAbsentEnd(reason) {
     if(!_apReady || !_absentStart) return;
-    console.log("Retour détecté:", reason);
     var now = Date.now();
     var ms = now - _absentStart;
     S.absentMs += ms;
     var dur = (ms / 1000).toFixed(1);
-    _absentStart = null;
     
-    const type = reason.includes('Onglet') ? 'RETOUR (ONGLET)' : 'RETOUR (FOCUS)';
+    _absentStart = null;
+    _absentFocusLogged = false;
+    _absentTabLogged = false;
+    
+    const type = reason.includes('Onglet') || reason.includes('visible') ? 'RETOUR (ONGLET)' : 'RETOUR (FOCUS)';
     log(type, 'Retour après ' + dur + 's (' + reason + ').', 'i');
     
     hideBanner();
@@ -2162,20 +2166,15 @@ function setupAP(){
   }
 
   document.addEventListener('visibilitychange', function() {
-    if (_isPaused) return;
     if(document.hidden) onAbsentStart('Changement d\'onglet ou réduction', false);
     else onAbsentEnd('Onglet redevenu visible');
   });
 
   window.addEventListener('blur', function() {
-    if (_isPaused) return;
-    // Ignorer le blur si le micro vient d'être activé (évite bug permission)
-    if (Date.now() - _lastVoiceStart < 2500) return;
-    onAbsentStart('Perte de focus (clic hors fenêtre)', true);
+    onAbsentStart('Perte de focus (autre application ou clic externe)', true);
   });
 
   window.addEventListener('focus', function() {
-    if (_isPaused) return;
     onAbsentEnd('Fenêtre a retrouvé le focus');
   });
 
