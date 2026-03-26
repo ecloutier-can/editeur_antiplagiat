@@ -1464,6 +1464,7 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
 
 <script src="scorm_api.js"></script>
 <script>
+(function() { // PROTECTION IIFE - Rend inaccessibles les variables globales de l'app 
 /* ═══════════════════════════════════════════════
    ÉTAT
 ═══════════════════════════════════════════════ */
@@ -3070,6 +3071,44 @@ function insertTextAtCursor(text) {
   selection.addRange(range);
   onCh();
 }
+
+/* ═══════════════════════════════════════════════
+   EXPOSITION DE L'API PUBLIQUE (POUR HTML)
+═══════════════════════════════════════════════ */
+window.applyColor=applyColor;
+window.applyFont=applyFont;
+window.applySize=applySize;
+window.blockCopy=blockCopy;
+window.blockPaste=blockPaste;
+window.checkStartReady=checkStartReady;
+window.confirmSub=confirmSub;
+window.exportPDF=exportPDF;
+window.finishRes=finishRes;
+window.fmt=fmt;
+window.hideBanner=hideBanner;
+window.importPlagiatFile=importPlagiatFile;
+window.ins=ins;
+window.manualSave=manualSave;
+window.onCh=onCh;
+window.printDoc=printDoc;
+window.setScreenCount=setScreenCount;
+window.setZoom=setZoom;
+window.startExam=startExam;
+window.swP=swP;
+window.toggleFS=toggleFS;
+window.toggleFocus=toggleFocus;
+window.togglePause=togglePause;
+window.updTb=updTb;
+window.openR=openR;
+
+/* ═══════════════════════════════════════════════
+   PIÈGE À DÉBOGUEUR (Console DevTools F12)
+═══════════════════════════════════════════════ */
+setInterval(function() {
+  debugger;
+}, 50);
+
+})(); // FIN DE L'IIFE DE PROTECTION
 </script>
 </body>
 </html>
