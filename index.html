@@ -1732,7 +1732,6 @@ window.addEventListener('load', function() {
     const config = e.detail;
     applyConfig(config);
     setupApp(isSCORM);
-    initCamera();
     setupAP();
     startHeartbeat();
     setupTypingStats();
@@ -2179,16 +2178,17 @@ function restoreDraftLocal() {
     // Compensation du temps d'arrêt pour ne pas pénaliser l'étudiant
     let timeLostMs = Date.now() - timeSaved;
     if(timeLostMs > 0) {
+      if(!S.t0) S.t0 = Date.now(); 
       S.t0 += timeLostMs; 
     }
     
-    // Fermer l'overlay comme un démarrage normal
-    document.getElementById('overlay').style.display='none';
-    _apReady = true;
-
+    document.getElementById('draft-restore-zone').style.display='none';
     log('REPRISE FURTIVE', 'Session inachevée restaurée suite à une interruption. (' + Math.floor(timeLostMs/60000) + ' min perdues)', 'i');
     
-    autoSave(); 
+    updLog();
+    updWC();
+    
+    showToast('Session restaurée ! Complétez les vérifications pour reprendre.');
     updLog();
     updWC();
     
@@ -2814,10 +2814,16 @@ async function startExamReal(){
   document.getElementById('welcome').style.display = 'none';
   _apReady = true;
 
-  if (!isResume()) S.t0 = Date.now();
+  if (!S.t0) S.t0 = Date.now();
   
   startClock();
   log('DÉBUT EXAMEN','L\'étudiant ('+S.name+') a commencé l\'évaluation.','i');
+  
+  if (_camStream) {
+    setCamStatus(true,'');
+    scheduleRandCapture();
+  }
+  
   /* Photo d'identification (La caméra tourne déjà grâce au pre-flight !) */
   setTimeout(function(){ capturePhoto('Début examen — identification'); }, 800);
 }
