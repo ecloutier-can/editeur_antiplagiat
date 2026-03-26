@@ -2015,11 +2015,47 @@ function showRecoveryBanner(){
 /* ═══════════════════════════════════════════════
    SAUVEGARDE LOCALE ET IMPORTATION (.plagiat)
 ═══════════════════════════════════════════════ */
+const _OB_KEY = "AntiTricheEdition2026!";
+
+function obfuscatePlagiat(jsonStr) {
+  let enc = encodeURIComponent(jsonStr);
+  let checksum = 0;
+  for(let i=0; i<enc.length; i++) {
+    checksum = ((checksum << 5) - checksum) + enc.charCodeAt(i);
+    checksum |= 0;
+  }
+  let finalStr = checksum + "|" + enc;
+  let xored = "";
+  for(let i=0; i<finalStr.length; i++) {
+    xored += String.fromCharCode(finalStr.charCodeAt(i) ^ _OB_KEY.charCodeAt(i % _OB_KEY.length));
+  }
+  return btoa(xored);
+}
+
+function deobfuscatePlagiat(b64) {
+  let xored = atob(b64);
+  let finalStr = "";
+  for(let i=0; i<xored.length; i++) {
+    finalStr += String.fromCharCode(xored.charCodeAt(i) ^ _OB_KEY.charCodeAt(i % _OB_KEY.length));
+  }
+  let sep = finalStr.indexOf('|');
+  if (sep === -1) throw new Error("Sceau cryptographique manquant (Falsification détectée)");
+  let expectedChecksum = parseInt(finalStr.substring(0, sep), 10);
+  let enc = finalStr.substring(sep + 1);
+  let checksum = 0;
+  for(let i=0; i<enc.length; i++) {
+    checksum = ((checksum << 5) - checksum) + enc.charCodeAt(i);
+    checksum |= 0;
+  }
+  if (checksum !== expectedChecksum) throw new Error("L'empreinte du fichier est invalide (Falsification détectée)");
+  return decodeURIComponent(enc);
+}
+
 function exportPlagiatFile() {
   const obj = build();
-  // Obfuscation simple pour empêcher l'édition triviale (base64 + inversion)
+  // Sécurisation Phase 16 : Chiffrement XOR + Empreinte d'intégrité (Checksum)
   const jsonStr = JSON.stringify(obj);
-  const obfuscated = btoa(encodeURIComponent(jsonStr).split('').reverse().join(''));
+  const obfuscated = obfuscatePlagiat(jsonStr);
   
   const blob = new Blob([obfuscated], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
@@ -2044,8 +2080,8 @@ function importPlagiatFile(event) {
   reader.onload = function(e) {
     try {
       const obfuscated = e.target.result;
-      // Inversion de l'obfuscation
-      const jsonStr = decodeURIComponent(atob(obfuscated).split('').reverse().join(''));
+      // Inversion de la sécurisation (XOR + Validation Checksum)
+      const jsonStr = deobfuscatePlagiat(obfuscated);
       const obj = JSON.parse(jsonStr);
       
       if (!obj || obj.text === undefined) throw new Error("Format invalide");
