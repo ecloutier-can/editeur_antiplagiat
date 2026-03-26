@@ -2130,7 +2130,7 @@ function setupAP(){
 
     if(isFocusLoss && !_absentFocusLogged) {
       S.focus++;
-      log('SORTIE APPLICATION', reason, 'blur');
+      log('PERTE DE FOCUS / APPLI', reason, 'd');
       _absentFocusLogged = true;
     } else if(!isFocusLoss && !_absentTabLogged) {
       S.tabs++;
@@ -2166,17 +2166,22 @@ function setupAP(){
   }
 
   document.addEventListener('visibilitychange', function() {
-    if(document.hidden) onAbsentStart('Changement d\'onglet ou réduction', false);
-    else onAbsentEnd('Onglet redevenu visible');
+    if(document.hidden) onAbsentStart('Réduction fenêtre ou onglet caché', false);
+    else onAbsentEnd('Application redevenie visible');
   });
 
+  /* Détection ultra-sensible du clic hors navigateur */
   window.addEventListener('blur', function() {
-    onAbsentStart('Perte de focus (autre application ou clic externe)', true);
+    onAbsentStart('Clic hors navigateur ou changement d\'application', true);
+  }, true);
+
+  window.addEventListener('focusout', function() {
+    onAbsentStart('Perte de focus (focusout)', true);
   });
 
   window.addEventListener('focus', function() {
-    onAbsentEnd('Fenêtre a retrouvé le focus');
-  });
+    onAbsentEnd('Retour application (focus)');
+  }, true);
 
   // 2. Blocage des Raccourcis Système
   const blockedShortcuts = config.security.blockShortcuts || [];
