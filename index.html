@@ -834,10 +834,8 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 
 #welcome h1 {
   font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 8px;
-  background: linear-gradient(to bottom, #fff, #94a3b8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent}
+  color: var(--text);
+}
 .wc-sub { font-size: 14px; text-align: center; color: var(--text-3); margin-bottom: 32px; font-weight: 500 }
 
 .wc-name-badge {
@@ -848,17 +846,17 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 .wc-section {
   background: rgba(255,255,255,0.03); border-radius: 16px; padding: 24px;
   margin-bottom: 32px; border: 1px solid rgba(255,255,255,0.05)}
-.wc-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #fff; display: flex; align-items: center; gap: 8px }
+.wc-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); display: flex; align-items: center; gap: 8px }
 .wc-rule { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 14px; color: var(--text-2) }
-.wc-rule strong { color: #fff }
+.wc-rule strong { color: var(--text) }
 .wi { font-size: 18px; filter: grayscale(1) opacity(0.8) }
 
 .wc-save-info { font-size: 13px; color: var(--text-3); line-height: 1.6; margin-bottom: 32px; padding: 0 8px }
 #welcome-auth { margin-bottom: 32px }
-#welcome-auth label { display: block; margin-bottom: 12px; font-weight: 600; color: #fff }
+#welcome-auth label { display: block; margin-bottom: 12px; font-weight: 600; color: var(--text) }
 #student-name {
-  width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 20px; color: #fff; font-size: 16px;
+  width: 100%; background: #ffffff; border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 20px; color: var(--text); font-size: 16px;
   outline: none; transition: 0.2s}
 #student-name:focus { border-color: var(--brand); box-shadow: 0 0 0 4px var(--brand-lt) }
 
@@ -2179,11 +2177,13 @@ function setupAP(){
   });
 
   /* Détection ultra-sensible du clic hors navigateur */
-  window.addEventListener('blur', function() {
+  window.addEventListener('blur', function(e) {
+    if (e.target !== window) return; // Ignorer les blur d'éléments internes
     onAbsentStart('Clic hors navigateur ou changement d\'application', true);
   }, true);
 
   window.addEventListener('focusout', function() {
+    if (document.hasFocus && document.hasFocus()) return; // Toujours dans la page (ex: clic barre d'outils)
     onAbsentStart('Perte de focus (focusout)', true);
   });
 
