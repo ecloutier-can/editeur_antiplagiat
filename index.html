@@ -1156,7 +1156,10 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   </div>
 
   <div id="hdr-right">
-    <div id="hdr-student" title="Étudiant">Chargement...</div>
+    <div id="hdr-student" title="Étudiant" style="display:flex;align-items:center;gap:12px">
+      <span id="hdr-user-name">👤 Chargement...</span>
+      <span id="wall-clock" style="font-family:monospace;font-weight:600;opacity:0.8;background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px"></span>
+    </div>
     <div id="hdr-timer">00:00:00</div>
     <div id="hdr-btns">
       <div class="tg">
@@ -1774,8 +1777,8 @@ function setupApp(isSCORM) {
 
   S.name = SCORM.getStudentName();
   S.id = SCORM.getStudentId();
-  var hdrS = document.getElementById('hdr-student');
-  if (hdrS) hdrS.textContent = '👤 ' + S.name;
+  var hdrN = document.getElementById('hdr-user-name');
+  if (hdrN) hdrN.textContent = '👤 ' + S.name;
   updWelcomeName(S.name);
   _sessKey = 'exam_sess_' + (S.id || 'anon');
 
@@ -2606,8 +2609,8 @@ async function startExam(){
   const nameVal = document.getElementById('student-name').value.trim();
   if (nameVal) {
     S.name = nameVal;
-    var hdrS = document.getElementById('hdr-student');
-    if (hdrS) hdrS.textContent = '👤 ' + S.name;
+    var hdrN = document.getElementById('hdr-user-name');
+    if (hdrN) hdrN.textContent = '👤 ' + S.name;
     updSub();
   }
 
