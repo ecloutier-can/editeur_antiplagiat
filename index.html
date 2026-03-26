@@ -117,6 +117,8 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round}
 .tb-btn:hover{background: var(--brand-lt); color: var(--brand-mid); transform: translateY(-1px)}
 .tb-btn.on{background: var(--brand-lt); border-color: rgba(79, 70, 229, 0.2); color: var(--brand)}
+.tb-btn.active-tts{background: var(--brand); color: #fff; box-shadow: 0 0 10px rgba(227, 0, 79, 0.4); animation: tts-pulse 1.5s infinite alternate}
+@keyframes tts-pulse { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
 
 .tb-sel{border: 1px solid var(--border); border-radius: var(--radius-sm);
   padding: 2px 8px; font-size: 11px; background: var(--card); height: 28px;
@@ -1298,6 +1300,12 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
     </button>
   </div>
+  <div class="tb-sep"></div>
+  <div class="tg">
+    <button class="tb-btn" id="btn-tts" onclick="toggleTTS()" title="Synthèse vocale (Surlignez du texte pour lire)">
+      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- Barre de progression mots -->
@@ -2440,6 +2448,27 @@ function updWC(){
 /* ═══════════════════════════════════════════════
    BARRE D'OUTILS
 ═══════════════════════════════════════════════ */
+/* ── SYNTHÈSE VOCALE NATIVE (Phase 21) ── */
+let isSpeaking = false;
+function toggleTTS() {
+  const btn = document.getElementById('btn-tts');
+  if (isSpeaking) { stopTTS(); return; }
+  const selection = window.getSelection().toString();
+  const textToRead = selection || ed.innerText;
+  if (!textToRead.trim()) return;
+  const msg = new SpeechSynthesisUtterance(textToRead);
+  msg.lang = 'fr-FR';
+  const voices = window.speechSynthesis.getVoices();
+  const frVoice = voices.find(v => v.lang.startsWith('fr'));
+  if (frVoice) msg.voice = frVoice;
+  msg.onstart = () => { isSpeaking = true; btn.classList.add('active-tts'); };
+  msg.onend = () => { isSpeaking = false; btn.classList.remove('active-tts'); };
+  msg.onerror = () => { isSpeaking = false; btn.classList.remove('active-tts'); };
+  window.speechSynthesis.speak(msg);
+}
+function stopTTS() { window.speechSynthesis.cancel(); isSpeaking = false; const btn = document.getElementById('btn-tts'); if (btn) btn.classList.remove('active-tts'); }
+ed.addEventListener('keydown', () => { if (isSpeaking) stopTTS(); });
+
 function fmt(cmd,val){document.execCommand(cmd,false,val||null);ed.focus();updTb();}
 function applyFont(){document.execCommand('fontName',false,document.getElementById('sel-font').value);ed.focus();}
 function applySize(){
@@ -3237,6 +3266,7 @@ window.swP=swP;
 window.toggleFS=toggleFS;
 window.toggleFocus=toggleFocus;
 window.togglePause=togglePause;
+window.toggleTTS=toggleTTS;
 window.updTb=updTb;
 window.openR=openR;
 
