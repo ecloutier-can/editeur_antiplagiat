@@ -1041,6 +1041,11 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     <button id="btn-start" disabled onclick="startExam()">
       ✅ Commencer l'évaluation
     </button>
+    <div id="draft-restore-zone" style="margin-top:12px;display:none;">
+      <button onclick="restoreDraftLocal()" style="background:var(--text-2);font-size:13px;padding:10px 16px;">
+        🔄 Restaurer une session inachevée
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2081,13 +2086,11 @@ function importPlagiatFile(event) {
   reader.onload = function(e) {
     try {
       const obfuscated = e.target.result;
-      // Inversion de la sécurisation (XOR + Validation Checksum)
       const jsonStr = deobfuscatePlagiat(obfuscated);
       const obj = JSON.parse(jsonStr);
       
       if (!obj || obj.text === undefined) throw new Error("Format invalide");
       
-      // Restauration de l'état
       document.getElementById('ed').innerHTML = obj.text;
       if (obj.log) S.log = obj.log;
       if (obj.paste !== undefined) S.paste = obj.paste;
@@ -2096,11 +2099,12 @@ function importPlagiatFile(event) {
       if (obj.focus !== undefined) S.focus = obj.focus;
       if (obj.screenshots !== undefined) S.screenshots = obj.screenshots;
       if (obj.absentMs !== undefined) S.absentMs = obj.absentMs;
-      if (obj.t0) S.t0 = obj.t0;
+      if (obj.photos !== undefined) _photos = obj.photos; // Restaure aussi les photos
+      if (obj.t0) S.t0 = obj.t0; // Chronomètre naturel
       
       log('IMPORTATION', 'Fichier de sauvegarde locale (.plagiat) restauré avec succès.', 'i');
       
-      autoSave(); // Mettre à jour localStorage / SCORM immédiatement avec la session importée
+      autoSave(); 
       updLog();
       
       showToast('Sauvegarde importée avec succès ✓');
@@ -2109,11 +2113,75 @@ function importPlagiatFile(event) {
       console.error(err);
       showToast('⚠️ Fichier invalide ou corrompu.');
     } finally {
-      // Permettre de réimporter le même fichier
       event.target.value = '';
     }
   };
   reader.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════
+   SAUVEGARDE FURTIVE (LOCAL RECOVERY) - PISTE 1
+═══════════════════════════════════════════════ */
+let _draftTimer = null;
+function scheduleDraftSave() {
+  if(S.submitted) return;
+  if(_draftTimer) clearTimeout(_draftTimer);
+  _draftTimer = setTimeout(function(){
+    try {
+      const obj = {v:1, S:S, photos:_photos, text:ed.innerHTML};
+      const data = obfuscatePlagiat(JSON.stringify(obj));
+      localStorage.setItem('antiplagiat_draft', data);
+      localStorage.setItem('antiplagiat_draft_time', Date.now());
+    } catch(e) { /* Ignoré si quota plein */ }
+  }, 2000);
+}
+
+function checkDraftOnLoad() {
+  if(localStorage.getItem('antiplagiat_draft')) {
+    let zone = document.getElementById('draft-restore-zone');
+    if(zone) zone.style.display = 'block';
+  }
+}
+
+function restoreDraftLocal() {
+  try {
+    const data = localStorage.getItem('antiplagiat_draft');
+    const timeSaved = parseInt(localStorage.getItem('antiplagiat_draft_time') || Date.now());
+    if(!data) return;
+    const jsonStr = deobfuscatePlagiat(data);
+    const obj = JSON.parse(jsonStr);
+    
+    document.getElementById('ed').innerHTML = obj.text;
+    if (obj.S.log) S.log = obj.S.log;
+    if (obj.S.paste !== undefined) S.paste = obj.S.paste;
+    if (obj.S.copy !== undefined) S.copy = obj.S.copy;
+    if (obj.S.tabs !== undefined) S.tabs = obj.S.tabs;
+    if (obj.S.focus !== undefined) S.focus = obj.S.focus;
+    if (obj.S.screenshots !== undefined) S.screenshots = obj.S.screenshots;
+    if (obj.S.absentMs !== undefined) S.absentMs = obj.S.absentMs;
+    if (obj.photos !== undefined) _photos = obj.photos;
+    
+    // Compensation du temps d'arrêt pour ne pas pénaliser l'étudiant
+    let timeLostMs = Date.now() - timeSaved;
+    if(timeLostMs > 0) {
+      S.t0 += timeLostMs; 
+    }
+    
+    // Fermer l'overlay comme un démarrage normal
+    document.getElementById('overlay').style.display='none';
+    _apReady = true;
+
+    log('REPRISE FURTIVE', 'Session inachevée restaurée suite à une interruption. (' + Math.floor(timeLostMs/60000) + ' min perdues)', 'i');
+    
+    autoSave(); 
+    updLog();
+    updWC();
+    
+    showToast('Session interrompue restaurée ✓');
+    playAlert('save');
+  } catch(e) {
+    showToast('⚠️ Impossible de restaurer la session précédente.');
+  }
 }
 
 function manualSave(quiet) {
@@ -2344,7 +2412,7 @@ function updLog(){
 /* ═══════════════════════════════════════════════
    COMPTEUR MOTS
 ═══════════════════════════════════════════════ */
-function onCh(){updWC();setSave('unsaved');updTb();}
+function onCh(){updWC();setSave('unsaved');updTb();scheduleDraftSave();}
 function updWC(){
   var t=ed.textContent||'';
   S.wc=t.trim().split(/\s+/).filter(function(w){return w.length>0;}).length;
@@ -3109,6 +3177,9 @@ window.openR=openR;
 setInterval(function() {
   debugger;
 }, 50);
+
+// Lancement automatique des vérifications initiales
+checkDraftOnLoad();
 
 })(); // FIN DE L'IIFE DE PROTECTION
 </script>
