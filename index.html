@@ -3227,22 +3227,18 @@ window.ins=ins;
 window.manualSave=manualSave;
 window.onCh=onCh;
 window.printDoc=printDoc;
-window.setScreenCount=setScreenCount;
+window.testCameraPreflight=testCameraPreflight;
+window.testScreenPreflight=testScreenPreflight;
+window.toggleScreenBtn=toggleScreenBtn;
+window.startExamReal=startExamReal;
+window.checkStartReady=checkStartReady;
 window.setZoom=setZoom;
-window.startExam=startExam;
 window.swP=swP;
 window.toggleFS=toggleFS;
 window.toggleFocus=toggleFocus;
 window.togglePause=togglePause;
 window.updTb=updTb;
 window.openR=openR;
-
-/* ═══════════════════════════════════════════════
-   PIÈGE À DÉBOGUEUR (Console DevTools F12)
-═══════════════════════════════════════════════ */
-setInterval(function() {
-  debugger;
-}, 50);
 
 // Lancement automatique des vérifications initiales
 checkDraftOnLoad();
