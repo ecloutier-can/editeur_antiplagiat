@@ -2162,19 +2162,24 @@ function scheduleDraftSave() {
   if(_draftTimer) clearTimeout(_draftTimer);
   _draftTimer = setTimeout(function(){
     try {
-      // On ne sauvegarde PAS les photos (Base64 trop lourd pour localStorage)
       const obj = {v:1, S:S, text:ed.innerHTML};
       const data = obfuscatePlagiat(JSON.stringify(obj));
       localStorage.setItem('antiplagiat_draft', data);
       localStorage.setItem('antiplagiat_draft_time', Date.now());
-    } catch(e) { console.warn("Quota localStorage atteint, sauvegarde restreinte."); }
+      console.log("💾 Sauvegarde furtive effectuée (" + ed.innerHTML.length + " chars)");
+    } catch(e) { console.warn("Quota localStorage atteint ou accès refusé."); }
   }, 2000);
 }
 
 function checkDraftOnLoad() {
-  if(localStorage.getItem('antiplagiat_draft')) {
+  console.log("🔍 Vérification de session locale...");
+  const draft = localStorage.getItem('antiplagiat_draft');
+  if(draft) {
+    console.log("Found draft in localStorage, showing zone.");
     let zone = document.getElementById('draft-restore-zone');
     if(zone) zone.style.display = 'flex';
+  } else {
+    console.log("No draft found in localStorage.");
   }
 }
 
@@ -2208,7 +2213,6 @@ function restoreDraftLocal() {
     if (obj.S.focus !== undefined) S.focus = obj.S.focus;
     if (obj.S.screenshots !== undefined) S.screenshots = obj.S.screenshots;
     if (obj.S.absentMs !== undefined) S.absentMs = obj.S.absentMs;
-    // Les photos ne sont pas restaurées (non sauvegardées pour quota)
     
     // Compensation du temps d'arrêt
     let timeLostMs = Date.now() - timeSaved;
@@ -2220,10 +2224,10 @@ function restoreDraftLocal() {
     document.getElementById('draft-restore-zone').style.display='none';
     log('REPRISE FURTIVE', 'Session inachevée restaurée suite à une interruption. (' + Math.floor(timeLostMs/60000) + ' min perdues)', 'i');
     
-    // Si un nom était sauvegardé, on l'affiche
-    if(obj.S.studentName) {
+    // Si un nom était sauvegardé, on l'affiche (Correction: S.name au lieu de studentName)
+    if(obj.S.name) {
       const nameInput = document.getElementById('student-name');
-      if(nameInput) nameInput.value = obj.S.studentName;
+      if(nameInput) nameInput.value = obj.S.name;
     }
     
     updLog();
