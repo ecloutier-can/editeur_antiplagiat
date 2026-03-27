@@ -1527,6 +1527,7 @@ var _screenStreams = [];   /* tableau de MediaStream (un par écran partagé) */
 var _isPaused    = false;
 var _pauseTimer  = null;
 var _pauseTimeleft = 300; // 5 min en sec
+var _monitoringActive = false; // Flag de santé du moteur de surveillance
 var _screenCount  = 1;    /* nombre d'écrans déclarés par l'étudiant */
 var _screenEnabled = false; /* true si enableScreenCapture activé et consenti */
 var ed = document.getElementById('ed');
@@ -2180,18 +2181,29 @@ function scheduleDraftSave() {
 }
 
 function checkDraftOnLoad() {
-  console.log("🔍 Vérification de session locale...");
-  const draft = localStorage.getItem('antiplagiat_draft');
-  if(draft) {
-    // Ne montrer la zone de restauration QUE si l'écran de bienvenue est visible
-    const welcome = document.getElementById('welcome');
-    const isWelcomeVisible = welcome && (window.getComputedStyle(welcome).display !== 'none');
-    
-    if (isWelcomeVisible) {
-      const zone = document.getElementById('draft-restore-zone');
-      if(zone) zone.style.display = 'flex';
-      console.log("💾 Draft trouvé et écran d'accueil actif : zone affichée.");
+  try {
+    console.log("🔍 Vérification de session locale...");
+    const draft = localStorage.getItem('antiplagiat_draft');
+    if(draft) {
+      // Vérification de l'intégrité du draft déobfusqué
+      const decoded = deobfuscatePlagiat(draft);
+      if(!decoded || decoded.charAt(0) !== '{') throw new Error("Data corruption");
+      const obj = JSON.parse(decoded);
+      if(!obj || !obj.S) throw new Error("Invalid format");
+
+      // Ne montrer la zone de restauration QUE si l'écran de bienvenue est visible
+      const welcome = document.getElementById('welcome');
+      const isWelcomeVisible = welcome && (window.getComputedStyle(welcome).display !== 'none');
+      
+      if (isWelcomeVisible) {
+        const zone = document.getElementById('draft-restore-zone');
+        if(zone) zone.style.display = 'flex';
+        console.log("💾 Draft trouvé et écran d'accueil actif : zone affichée.");
+      }
     }
+  } catch(e) {
+    console.warn("Session corrompue détectée et nettoyée automatiquement :", e.message);
+    clearDraftLocal();
   }
 }
 
@@ -3327,6 +3339,9 @@ window.updTb=updTb;
 
 // Lancement automatique des vérifications initiales
 checkDraftOnLoad();
+_monitoringActive = true;
+console.log("🛡️ Moteur de surveillance initialisé.");
+if(typeof checkStartReady === 'function') checkStartReady();
 
 })(); // FIN DE L'IIFE DE PROTECTION
 </script>
