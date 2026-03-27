@@ -19,9 +19,14 @@ Il fonctionne en arrière-plan (overlay) et interagit directement avec les zones
 
 ## Règles d'intégration au projet
 Lorsque tu travailles sur l'application `editeur_antiplagiat` et que tu dois implémenter ou débugger des systèmes touchant à la frappe de l'étudiant :
+
+> [!IMPORTANT]
+> **Règle d'or (Sécurité Maximale) :** NE JAMAIS assouplir la sécurité pour Lexibar. Toute fonctionnalité de Lexibar jugée essentielle (ex: lecture vocale) doit être **implémentée nativement** à l'intérieur de notre "coquille" protégée (ex: Phase 21). L'application doit rester hermétique aux injections externes.
+
 - **Toujours penser "Faux Positif" :** Avant de durcir les règles anti-triche (ex: vitesse de frappe anormale, collage bloqué), pose-toi la question : *"Est-ce que Lexibar ou un autre prédicteur de mots pourrait déclencher cette alerte par erreur en insérant rapidement un mot de 12 lettres ?"*
 - **Compatibilité du DOM :** Ne t'attends pas à ce que le contenu du `#ed` ne contienne que du texte pur. Des logiciels d'assistance peuvent injecter des marqueurs DOM. La fonction d'extraction de texte (ex: `innerText` vs `innerHTML`) doit en tenir compte.
 - **Accessibilité :** Ne désactive jamais les attributs globaux qui permettent à Lexibar de s'ancrer au texte (garde la sémantique de base des `contenteditable` ou `textarea`).
+
 
 ## Comment invoquer ce skill
 Ce fichier sert de mémoire persistante. Lorsque tu dois résoudre un conflit entre l'éditeur et un logiciel d'aide, tu dois t'y référer pour te remémorer les interférences potentielles (Dom poisoning, faux-positifs de collage, etc.).
