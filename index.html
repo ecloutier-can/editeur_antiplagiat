@@ -2207,9 +2207,22 @@ function checkDraftOnLoad() {
   }
 }
 
+function clearAllLocalStorage() {
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('antiplagiat_') || key.startsWith('scorm_editor_'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    console.log("🧹 Nettoyage complet du localStorage effectué.");
+  } catch(e) { console.warn("Erreur lors du nettoyage localStorage:", e); }
+}
+
 function clearDraftLocal() {
-  localStorage.removeItem('antiplagiat_draft');
-  localStorage.removeItem('antiplagiat_draft_time');
+  clearAllLocalStorage();
   const zone = document.getElementById('draft-restore-zone');
   if(zone) zone.style.display = 'none';
   showToast('Sauvegarde furtive effacée.');
@@ -2897,6 +2910,13 @@ async function testScreenPreflight() {
 }
 
 async function startExamReal(){
+  // Purge préventive si un ancien draft n'a pas été restauré (ignorer le brouillon)
+  const zone = document.getElementById('draft-restore-zone');
+  if (zone && zone.style.display !== 'none') {
+    console.log("🚀 Nouveau départ : purge des anciennes sessions.");
+    clearAllLocalStorage();
+  }
+
   const nameVal = document.getElementById('student-name').value.trim();
   if (nameVal) {
     S.name = nameVal;
