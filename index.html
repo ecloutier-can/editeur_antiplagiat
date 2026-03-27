@@ -1056,10 +1056,16 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
       </div>
     </div>
 
-    <div id="draft-restore-zone" style="margin-top:12px;display:none;text-align:center;">
-      <button onclick="restoreDraftLocal()" style="background:var(--text-3);color:#fff;font-size:13px;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;margin-bottom:16px;">
-        🔄 Restaurer une session inachevée (Panne)
-      </button>
+    <div id="draft-restore-zone" style="margin-top:1.5rem; display:none; flex-direction:column; align-items:center; gap:0.75rem; background:rgba(225, 29, 72, 0.05); padding:1.25rem; border-radius:1rem; border:1px solid rgba(225, 29, 72, 0.2); margin-bottom: 1.5rem;">
+      <div style="font-size:0.85rem; font-weight:600; color:var(--brand); margin-bottom:0.25rem;">⚠️ Session inachevée détectée</div>
+      <div style="display:flex; gap:0.5rem; justify-content:center; width:100%;">
+        <button onclick="restoreDraftLocal()" class="cl-btn" style="flex:1; background:var(--brand); color:#fff; font-size:0.8rem; padding:0.75rem; border:none; border-radius:8px; cursor:pointer; font-weight:600;">
+          🔄 Restaurer le texte
+        </button>
+        <button onclick="clearDraftLocal()" class="cl-btn" style="flex:none; background:#fff; color:var(--text-3); border:1px solid var(--border); font-size:0.8rem; padding:0.75rem; border-radius:8px; cursor:pointer;">
+          🗑️ Ignorer
+        </button>
+      </div>
     </div>
 
     <button id="btn-start" disabled onclick="startExamReal()">
@@ -2161,8 +2167,15 @@ function scheduleDraftSave() {
 function checkDraftOnLoad() {
   if(localStorage.getItem('antiplagiat_draft')) {
     let zone = document.getElementById('draft-restore-zone');
-    if(zone) zone.style.display = 'block';
+    if(zone) zone.style.display = 'flex';
   }
+}
+
+function clearDraftLocal() {
+  localStorage.removeItem('antiplagiat_draft');
+  localStorage.removeItem('antiplagiat_draft_time');
+  const zone = document.getElementById('draft-restore-zone');
+  if(zone) zone.style.display = 'none';
 }
 
 function restoreDraftLocal() {
@@ -2672,6 +2685,7 @@ function doSubmit(){
   document.getElementById('sub-ok').style.display='block';
   var bs=document.getElementById('btn-sub');bs.disabled=true;bs.textContent='✅ Travail soumis';
   log('SOUMISSION','Travail soumis dans le carnet de notes Moodle.','i');
+  clearDraftLocal();
   updLog();swP('sub');
 }
 function lockEd(lock){
