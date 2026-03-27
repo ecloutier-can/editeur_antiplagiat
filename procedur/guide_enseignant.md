@@ -4,81 +4,70 @@ Ce guide est conçu pour vous aider à comprendre et à utiliser rapidement l'**
 
 ---
 
-## 1. Accueil et Règles de l'Évaluation
-Lorsque l'étudiant lance l'activité, il arrive sur un écran de bienvenue qui lui rappelle les règles strictes de l'épreuve.
+## 1. Accueil et Récupération de Session
+Lorsqu'un étudiant lance l'activité, le système vérifie si une session a été interrompue (coupure internet, fermeture accidentelle).
 
-![Écran d'accueil](accueil.png)
+![Écran de bienvenue avec récupération](img/accueil_recovery.png)
 
-**Ce que l'étudiant doit savoir :**
-*   **Copier-coller désactivé** : L'étudiant ne peut pas importer de texte externe.
-*   **Verrouillage** : Une fois le travail soumis, plus aucune modification n'est possible.
-*   **Consentement** : L'étudiant doit accepter les règles et indiquer son nom pour pouvoir commencer.
+**Nouveauté : Récupération Robuste**
+*   **Session en cours** : Si un travail non soumis est détecté, un bloc bleu s'affiche.
+*   **Restaurer** : Permet de reprendre exactement là où l'étudiant s'était arrêté.
+*   **Effacer** : Nettoie les données locales pour recommencer à zéro (ex: changement d'étudiant).
 
 ---
 
-## 2. L'Interface de Rédaction
+## 2. Étapes de Pré-vérification (Pre-flight)
+Avant de pouvoir taper le moindre mot, l'étudiant doit compléter un parcours de vérification obligatoire.
+
+![Checklist avant examen](img/preflight.png)
+
+**Les 3 étapes obligatoires :**
+1.  **Identification** : Saisie du nom de l'étudiant.
+2.  **Vérification Caméra** : Le système active la webcam pour s'assurer qu'elle fonctionne.
+3.  **Partage d'Écran** : L'étudiant doit partager l'intégralité de son écran (ou de ses deux écrans) pour valider qu'un seul outil est utilisé.
+4.  **Santé Système** : Un indicateur interne vérifie que le moteur de surveillance est actif. Si un bloqueur (Shields ou extension) bloque le script, le bouton restera bloqué par sécurité.
+
+---
+
+## 3. L'Interface de Rédaction & Mode Pause
 L'éditeur offre une interface épurée, similaire à un traitement de texte moderne, mais entièrement contrôlée.
 
-![Interface de l'éditeur](editeur.png)
+![Mode Pause sécurisé](img/pause.png)
 
-**Fonctions clés pour l'étudiant :**
-*   **Barre d'outils** : Formatage de base (Gras, Italique, Listes, Police, Taille).
-*   **Horloge en temps réel** : Affiche l'heure actuelle ainsi que le temps écoulé depuis le début de la session.
-*   **Sauvegarde automatique** : Le texte est enregistré toutes les 30 secondes vers Moodle et la base de données locale.
-*   **Compteur de mots** : Visible en bas à gauche pour suivre la progression par rapport à l'objectif.
-
----
-
-## 3. Le Journal de Surveillance (Sûreté)
-C'est le cœur du système anti-plagiat. Chaque action suspecte est enregistrée dans l'onglet **Journal**.
-
-![Journal de surveillance](journal.png)
-
-**Événements surveillés :**
-*   **Sortie de fenêtre (Focus loss)** : Si l'étudiant clique sur une autre application ou un autre onglet, l'événement est marqué en rouge avec le temps exact passé "hors fenêtre".
-*   **Collages (Paste)** : Tentatives (bloquées) d'importation de texte.
-*   **Photos/Captures** : Des photos webcam et captures d'écran sont prises aléatoirement pour valider l'identité et l'environnement de l'étudiant.
+**Fonctions de contrôle :**
+*   **Mode Pause** : L'enseignant peut autoriser une pause (ex: 5 minutes). Pendant ce temps, l'éditeur est masqué et verrouillé pour empêcher toute rédaction hors surveillance.
+*   **Horloge & Compteur** : Visibles en permanence pour la gestion du temps et du volume de texte.
+*   **Sauvegarde Furtive** : Le texte est enregistré localement toutes les 2 secondes en arrière-plan pour éviter toute perte de données.
 
 ---
 
-## 4. Ressources Autorisées
-Pour aider l'étudiant sans compromettre la sécurité, deux ressources externes sont intégrées directement dans l'interface : **Le Conjugueur** et **Le Dictionnaire Usito**.
+## 4. Le Journal de Surveillance (Intégrité)
+Chaque action suspecte est enregistrée de manière transparente dans l'onglet **Journal**.
 
-![Onglet Ressources](ressources.png)
+![Journal de surveillance détaillé](img/journal.png)
 
-*   L'accès à ces sites est consigné.
-*   L'étudiant ne quitte jamais l'éditeur sécurisé pour consulter ces outils.
-
----
-
-## 5. Processus de Soumission
-Avant de soumissionner, l'étudiant peut consulter l'onglet **Soumettre** pour voir un résumé global de son activité.
-
-![Statistiques de soumission](soumettre_stats.png)
-
-**L'étudiant peut voir :**
-*   Le nombre de mots rédigés.
-*   Le nombre de alertes (collages, sorties de focus).
-*   La durée totale de sa session.
+**Événements surveillés en temps réel :**
+*   **Sortie de fenêtre (Focus loss)** : Passage à un autre onglet ou application (marqué en rouge).
+*   **Collages (Paste)** : Tentatives d'importation de texte externe (bloquées).
+*   **Captures Automatiques** : Photos webcam et captures d'écran prises à intervalles réguliers.
 
 ---
 
-## 6. Confirmation et Verrouillage
-Une fois que l'étudiant clique sur "Soumettre", un message de confirmation géant s'affiche en vert.
+## 5. Ressources Autorisées & Soumission
+Deux ressources externes sont intégrées sans quitter l'interface : **Le Conjugueur** et **Usito**.
 
-![Confirmation de succès](succes.png)
-
-**Résultat final :**
-1.  Le texte est transmis de manière définitive au carnet de notes Moodle.
-2.  L'éditeur passe en **mode lecture seule** (impossible d'éditer).
-3.  L'étudiant peut télécharger son travail en **PDF** ou l'imprimer pour ses propres archives.
+**Processus final :**
+1.  L'étudiant soumet son travail.
+2.  Le texte est verrouillé en **lecture seule**.
+3.  Les données sont transmises au carnet de notes Moodle.
+4.  L'étudiant peut exporter son travail en **PDF** pour preuve.
 
 ---
 
 ## 💡 Conseils pour l'Enseignant
-*   **Vérification des notes** : Le texte est stocké dans le champ `suspend_data` de l'activité SCORM dans votre rapport Moodle.
-*   **Analyse du journal** : En cas de doute sur l'intégrité, consultez les "Temps hors fenêtre" dans le journal de l'étudiant.
-*   **Configuration** : Vous pouvez ajuster les couleurs ou les logos via le fichier `config.json` si nécessaire.
+*   **Vérification des notes** : Le texte et le journal sont stockés dans le champ `suspend_data` de votre rapport Moodle SCORM.
+*   **Analyse du journal** : En cas de doute, vérifiez la fréquence des "Sorties de fenêtre" et les photos d'identification.
+*   **Brave & Ad-Blockers** : Si un étudiant signale que le bouton "Démarrer" est bloqué, demandez-lui de **désactiver les boucliers (Shields)** ou de tester en navigation privée.
 
 ---
-*Document généré automatiquement pour l'Éditeur AntiPlagiat — Mars 2026*
+*Document mis à jour — Mars 2026 — Éditeur AntiPlagiat V2.5*
