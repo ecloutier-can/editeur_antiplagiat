@@ -2175,11 +2175,15 @@ function checkDraftOnLoad() {
   console.log("🔍 Vérification de session locale...");
   const draft = localStorage.getItem('antiplagiat_draft');
   if(draft) {
-    console.log("Found draft in localStorage, showing zone.");
-    let zone = document.getElementById('draft-restore-zone');
-    if(zone) zone.style.display = 'flex';
-  } else {
-    console.log("No draft found in localStorage.");
+    // Ne montrer la zone de restauration QUE si l'écran de bienvenue est visible
+    const welcome = document.getElementById('welcome');
+    const isWelcomeVisible = welcome && (window.getComputedStyle(welcome).display !== 'none');
+    
+    if (isWelcomeVisible) {
+      const zone = document.getElementById('draft-restore-zone');
+      if(zone) zone.style.display = 'flex';
+      console.log("💾 Draft trouvé et écran d'accueil actif : zone affichée.");
+    }
   }
 }
 
@@ -3304,7 +3308,7 @@ window.testCameraPreflight=testCameraPreflight;
 window.testScreenPreflight=testScreenPreflight;
 window.toggleScreenBtn=toggleScreenBtn;
 window.startExamReal=startExamReal;
-window.checkStartReady=checkStartReady;
+window.openRes=openRes;
 window.setZoom=setZoom;
 window.swP=swP;
 window.toggleFS=toggleFS;
@@ -3312,7 +3316,6 @@ window.toggleFocus=toggleFocus;
 window.togglePause=togglePause;
 window.toggleTTS=toggleTTS;
 window.updTb=updTb;
-window.openR=openR;
 
 // Lancement automatique des vérifications initiales
 checkDraftOnLoad();
