@@ -1269,6 +1269,13 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   </div>
   <div class="tb-sep"></div>
   <div class="tg">
+    <button class="tb-btn" onclick="fmt('formatBlock','<h1>')" title="Titre 1" style="font-weight:900;font-size:14px">H1</button>
+    <button class="tb-btn" onclick="fmt('formatBlock','<h2>')" title="Titre 2" style="font-weight:800;font-size:13px">H2</button>
+    <button class="tb-btn" onclick="fmt('formatBlock','<h3>')" title="Titre 3" style="font-weight:700;font-size:12px">H3</button>
+    <button class="tb-btn" onclick="fmt('formatBlock','<p>')"  title="Paragraphe" style="font-weight:500;font-size:11px">P</button>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tg">
     <input type="color" id="clr-txt" class="tb-color" value="#000000" onchange="applyColor()">
     <button class="tb-btn" onclick="fmt('hiliteColor','#FFF176')" title="Surligner">
       <span style="background:#FFF176;padding:0 3px;border-radius:2px">A</span></button>
