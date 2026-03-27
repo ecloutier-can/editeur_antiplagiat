@@ -85,6 +85,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 #hdr-timer { display: none; }
 
 #hdr-btns { display: flex; align-items: center; gap: 12px; flex-wrap: wrap }
+#cam-video { position: fixed; top: 10px; left: 10px; width: 120px; height: 90px; object-fit: cover; border-radius: 6px; background: #000; border: 1px solid rgba(255,255,255,0.1); opacity: 0.01; pointer-events: none; z-index: -1; }
 .h-sep { width: 1px; height: 24px; background: rgba(0,0,0,0.1) }
 .hbtn {
   background: #ffffff;
@@ -1614,36 +1615,43 @@ function setCamStatus(ok,msg){
   else  { el.innerHTML='<span class="hst-dot"></span>'+msg; el.className='hst off'; }
 }
 
-async function capturePhoto(reason){
-  if(!_camStream) return;
-  var v=document.getElementById('cam-video');
-  var c=document.getElementById('cam-canvas');
-  try{
-    var ctx=c.getContext('2d');
-    ctx.drawImage(v,0,0,120,90);
-    var camData=c.toDataURL('image/jpeg',0.25);
-    var n=new Date();
-    var t=pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+async function capturePhoto(reason) {
+  if (!_camStream) return;
+  var v = document.getElementById('cam-video');
+  var c = document.getElementById('cam-canvas');
+  try {
+    // S'assurer que le flux est actif et "joue" pour éviter les frames noires sur certains navigateurs (Mac/Safari)
+    if (v.paused) await v.play().catch(() => {});
+    
+    // Un léger délai permet au pipeline de rendu du navigateur de produire un frame réel,
+    // surtout si l'onglet était en arrière-plan ou l'élément hors-champ.
+    await new Promise(r => setTimeout(r, 150));
+
+    var ctx = c.getContext('2d');
+    ctx.drawImage(v, 0, 0, 120, 90);
+    var camData = c.toDataURL('image/jpeg', 0.25);
+    var n = new Date();
+    var t = pad(n.getHours()) + ':' + pad(n.getMinutes()) + ':' + pad(n.getSeconds());
     
     var screens = [];
-    if(_screenEnabled && _screenStreams && _screenStreams.length > 0) {
-      for(var i=0; i<_screenStreams.length; i++){
-        if(_screenStreams[i].active){
-           var sData = await captureScreenStream(_screenStreams[i]);
-           if(sData) screens.push(sData);
+    if (_screenEnabled && _screenStreams && _screenStreams.length > 0) {
+      for (var i = 0; i < _screenStreams.length; i++) {
+        if (_screenStreams[i].active) {
+          var sData = await captureScreenStream(_screenStreams[i]);
+          if (sData) screens.push(sData);
         }
       }
     }
 
-    _photos.push({time:t,reason:reason,dataUrl:camData,screens:screens});
-    if(_photos.length>12) _photos.shift();
-    S.photoCount=_photos.length;
-    if(!reason.includes('Capture')) S.photos++;
+    _photos.push({ time: t, reason: reason, dataUrl: camData, screens: screens });
+    if (_photos.length > 12) _photos.shift();
+    S.photoCount = _photos.length;
+    if (!reason.includes('Capture')) S.photos++;
     playAlert('photo');
-    log(reason.includes('Capture') ? 'CAPTURE' : 'PHOTO', 'Prise : '+reason, 'photo');
+    log(reason.includes('Capture') ? 'CAPTURE' : 'PHOTO', 'Prise : ' + reason, 'photo');
     renderPhotoGallery();
     updSub();
-  }catch(e){}
+  } catch (e) { console.error("Erreur capturePhoto:", e); }
 }
 
 async function captureScreenStream(stream) {
