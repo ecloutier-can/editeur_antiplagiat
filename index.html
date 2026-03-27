@@ -2156,11 +2156,12 @@ function scheduleDraftSave() {
   if(_draftTimer) clearTimeout(_draftTimer);
   _draftTimer = setTimeout(function(){
     try {
-      const obj = {v:1, S:S, photos:_photos, text:ed.innerHTML};
+      // On ne sauvegarde PAS les photos (Base64 trop lourd pour localStorage)
+      const obj = {v:1, S:S, text:ed.innerHTML};
       const data = obfuscatePlagiat(JSON.stringify(obj));
       localStorage.setItem('antiplagiat_draft', data);
       localStorage.setItem('antiplagiat_draft_time', Date.now());
-    } catch(e) { /* Ignoré si quota plein */ }
+    } catch(e) { console.warn("Quota localStorage atteint, sauvegarde restreinte."); }
   }, 2000);
 }
 
@@ -2194,9 +2195,9 @@ function restoreDraftLocal() {
     if (obj.S.focus !== undefined) S.focus = obj.S.focus;
     if (obj.S.screenshots !== undefined) S.screenshots = obj.S.screenshots;
     if (obj.S.absentMs !== undefined) S.absentMs = obj.S.absentMs;
-    if (obj.photos !== undefined) _photos = obj.photos;
+    // Les photos ne sont pas restaurées (non sauvegardées pour quota)
     
-    // Compensation du temps d'arrêt pour ne pas pénaliser l'étudiant
+    // Compensation du temps d'arrêt
     let timeLostMs = Date.now() - timeSaved;
     if(timeLostMs > 0) {
       if(!S.t0) S.t0 = Date.now(); 
@@ -2314,7 +2315,7 @@ function setupAP(){
 
   document.addEventListener('visibilitychange', function() {
     if(document.hidden) onAbsentStart('Réduction fenêtre ou onglet caché', false);
-    else onAbsentEnd('Application redevenie visible');
+    else onAbsentEnd('Application redevenue visible');
   });
 
   /* Détection ultra-sensible du clic hors navigateur */
@@ -2421,28 +2422,31 @@ function log(type,detail,sev){
   setSave('unsaved');updSub();updLog();
 }
 function updLog(){
-  var bad = S.paste + S.copy + S.tabs + S.focus + S.screenshots;
-  var bj = document.getElementById('bdg-j');
-  if(bj){ bj.textContent = bad; bj.className = 'badge' + (bad > 0 ? '' : ' z'); }
-  
-  var elPaste = document.getElementById('sc-paste'); if(elPaste) elPaste.textContent = S.paste;
-  var elCopy  = document.getElementById('sc-copy');  if(elCopy)  elCopy.textContent  = S.copy;
-  var elTab   = document.getElementById('sc-tab');   if(elTab)   elTab.textContent   = S.tabs;
-  var elFoc   = document.getElementById('sc-focus'); if(elFoc)   elFoc.textContent   = S.focus;
-  var elPhoto = document.getElementById('sc-photo'); if(elPhoto) elPhoto.textContent = S.photos;
-  var elScreen = document.getElementById('sc-screen'); if(elScreen) elScreen.textContent = S.screenshots;
-  var elAbs   = document.getElementById('sc-abs');   if(elAbs)   elAbs.textContent   = Math.round(S.absentMs/1000) + 's';
+  try {
+    var bad = S.paste + S.copy + S.tabs + S.focus + S.screenshots;
+    var bj = document.getElementById('bdg-j');
+    if(bj){ bj.textContent = bad; bj.className = 'badge' + (bad > 0 ? '' : ' z'); }
+    
+    var elPaste = document.getElementById('sc-paste'); if(elPaste) elPaste.textContent = S.paste;
+    var elCopy  = document.getElementById('sc-copy');  if(elCopy)  elCopy.textContent  = S.copy;
+    var elTab   = document.getElementById('sc-tab');   if(elTab)   elTab.textContent   = S.tabs;
+    var elFoc   = document.getElementById('sc-focus'); if(elFoc)   elFoc.textContent   = S.focus;
+    var elPhoto = document.getElementById('sc-photo'); if(elPhoto) elPhoto.textContent = S.photos;
+    var elScreen = document.getElementById('sc-screen'); if(elScreen) elScreen.textContent = S.screenshots;
+    var elAbs   = document.getElementById('sc-abs');   if(elAbs)   elAbs.textContent   = Math.round(S.absentMs/1000) + 's';
 
-  var ll = document.getElementById('loglist');
-  if(!S.log.length){ll.innerHTML='<div style="text-align:center;color:#aaa;padding:18px;font-size:11px">Aucun événement</div>';return;}
-  var h='';
-  S.log.slice(-50).reverse().forEach(function(e){
-    h+='<div class="le '+e.sev+'"><div><span class="ltime">'+esc(e.t)+'</span>'
-      +'<span class="lt">'+esc(e.type)+'</span></div>';
-    if(e.detail)h+='<div class="ldtl">'+esc(e.detail)+'</div>';
-    h+='</div>';
-  });
-  ll.innerHTML=h;
+    var ll = document.getElementById('loglist');
+    if(!ll) return; 
+    if(!S.log.length){ll.innerHTML='<div style="text-align:center;color:#aaa;padding:18px;font-size:11px">Aucun événement</div>';return;}
+    var h='';
+    S.log.slice(-50).reverse().forEach(function(e){
+      h+='<div class="le '+e.sev+'"><div><span class="ltime">'+esc(e.t)+'</span>'
+        +'<span class="lt">'+esc(e.type)+'</span></div>';
+      if(e.detail)h+='<div class="ldtl">'+esc(e.detail)+'</div>';
+      h+='</div>';
+    });
+    ll.innerHTML=h;
+  } catch(e) { console.error("Erreur log UI:", e); }
 }
 
 /* ═══════════════════════════════════════════════
