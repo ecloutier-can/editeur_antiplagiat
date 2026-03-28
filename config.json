@@ -7,7 +7,10 @@
     "typingSpeedLimit": 500,
     "heartbeatInterval": 5000,
     "enableScreenCapture": true,
-    "autoDownloadInterval": 1800000
+    "autoDownloadInterval": 1800000,
+    "enableAI": true,
+    "aiScanInterval": 4000,
+    "aiWarningDuration": 5000
   },
   "pedagogy": {
     "enableTimeline": true,
