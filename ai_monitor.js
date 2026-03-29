@@ -9,6 +9,7 @@
   let _model = null;
   let _aiVideo = null;
   let _intervalId = null;
+  let _config = null;
   let _startTime = null;
   let _multiPersonCount = 0; // Compteur pour la confirmation temporelle (Persistence)
   
@@ -29,29 +30,30 @@
   function updateStatusUI(state) {
     if (!_statusEl) return;
     
-    // Clear previous AI classes
+    // Nettoyer les classes IA
     _statusEl.classList.remove('off', 'ai-searching', 'ai-success', 'ai-warn');
     
-    const dot = _statusEl.querySelector('.hst-dot');
-    const label = _statusEl.lastChild;
-    
+    let labelText = "";
     switch(state) {
       case 'searching':
         _statusEl.classList.add('ai-searching');
-        label.textContent = " IA : Analyse...";
+        labelText = " IA : Analyse...";
         break;
       case 'success':
         _statusEl.classList.add('ai-success');
-        label.textContent = " IA : Visage OK";
+        labelText = " IA : Visage OK";
         break;
       case 'warn':
         _statusEl.classList.add('ai-warn');
-        label.textContent = " IA : Absence !";
+        labelText = " IA : Absence !";
         break;
       default:
         _statusEl.classList.add('off');
-        label.textContent = " IA : Désactivée";
+        labelText = " IA : Désactivée";
     }
+    
+    // Mise à jour robuste de l'affichage
+    _statusEl.innerHTML = '<span class="hst-dot"></span>' + labelText;
   }
 
   /**
