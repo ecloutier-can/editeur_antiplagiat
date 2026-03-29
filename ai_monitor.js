@@ -9,8 +9,8 @@
   let _model = null;
   let _aiVideo = null;
   let _intervalId = null;
-  let _config = null;
   let _startTime = null;
+  let _multiPersonCount = 0; // Compteur pour la confirmation temporelle (Persistence)
   
   // Timer state
   let _isWarningActive = false;
@@ -55,6 +55,45 @@
   }
 
   /**
+   * Calcule l'Intersection over Union (IOU) entre deux boîtes englobantes
+   * Utilisé pour fusionner les doublons techniques d'un même visage.
+   */
+  function calculateIOU(boxA, boxB) {
+    const xA = Math.max(boxA.topLeft[0], boxB.topLeft[0]);
+    const yA = Math.max(boxA.topLeft[1], boxB.topLeft[1]);
+    const xB = Math.min(boxA.bottomRight[0], boxB.bottomRight[0]);
+    const yB = Math.min(boxA.bottomRight[1], boxB.bottomRight[1]);
+
+    const interArea = Math.max(0, xB - xA) * Math.max(0, yB - yA);
+    if (interArea === 0) return 0;
+
+    const areaA = (boxA.bottomRight[0] - boxA.topLeft[0]) * (boxA.bottomRight[1] - boxA.topLeft[1]);
+    const areaB = (boxB.bottomRight[0] - boxB.topLeft[0]) * (boxB.bottomRight[1] - boxB.topLeft[1]);
+
+    return interArea / (areaA + areaB - interArea);
+  }
+
+  /**
+   * Filtre les doublons de détection basés sur le chevauchement (IOU)
+   */
+  function filterDuplicates(predictions) {
+    if (predictions.length <= 1) return predictions;
+    
+    let filtered = [];
+    for (let i = 0; i < predictions.length; i++) {
+        let isDuplicate = false;
+        for (let j = 0; j < filtered.length; j++) {
+            if (calculateIOU(predictions[i], filtered[j]) > 0.4) { // Seuil IOU à 40%
+                isDuplicate = true;
+                break;
+            }
+        }
+        if (!isDuplicate) filtered.push(predictions[i]);
+    }
+    return filtered;
+  }
+
+  /**
    * Load the BlazeFace model
    */
   async function init() {
@@ -87,48 +126,52 @@
       }
 
       // 2. Video Context Check
-      // On récupère le flux global via l'API exposée par index.html/scorm_api.js
       const stream = typeof window.getCameraStream === 'function' ? window.getCameraStream() : null;
       if (!stream || !_aiVideo) return;
 
-      // Attacher le flux si nécessaire
       if (_aiVideo.srcObject !== stream) {
         _aiVideo.srcObject = stream;
         _aiVideo.play().catch(() => {});
       }
 
-      // Vérifier que la vidéo est prête et "chaude"
       if (_aiVideo.paused || _aiVideo.readyState < 2 || _aiVideo.videoWidth === 0) {
         _aiVideo.play().catch(() => {});
         return;
       }
 
-      // 3. Délai de grâce initial (ex: 3s après le démarrage du moniteur)
+      // 3. Délai de grâce initial
       if (Date.now() - _startTime < 3000) return;
 
       try {
         // 4. Estimation BlazeFace
-        // Note: BlazeFace est optimisé pour les portraits proches (caméra frontale)
         const predictions = await _model.estimateFaces(_aiVideo, false);
         
-        // Filtre de confiance à 0.5
-        const validFaces = predictions.filter(p => {
-            // Le score peut être dans p.probability ou p.probability[0] selon la version
-            const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
-            return score > 0.5;
+        // --- HYBRIDE ÉTAPE 1 : Filtre de confiance à 0.5 ---
+        let validFaces = predictions.filter(p => {
+          const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
+          return score > 0.5;
         });
 
+        // --- HYBRIDE ÉTAPE 2 : Fusion des doublons (IOU) ---
+        validFaces = filterDuplicates(validFaces);
+
         if (validFaces.length === 0) {
-          // Aucun visage détecté
+          _multiPersonCount = 0;
           updateStatusUI('warn');
           triggerWarning();
         } else if (validFaces.length > 1) {
-          // Plusieurs personnes - Infraction immédiate
-          infractionDetected("Multi-personnes détectées par l'IA (" + validFaces.length + ")");
-          updateStatusUI('warn');
-          resetWarning();
+          _multiPersonCount++;
+          // --- HYBRIDE ÉTAPE 3 : Persistence temporelle ---
+          if (_multiPersonCount >= 2) {
+            infractionDetected("Multi-personnes confirmées par l'IA (" + validFaces.length + ")");
+            updateStatusUI('warn');
+            resetWarning();
+          } else {
+            console.log("🤖 IA: Anomalie suspectée (1/2), confirmation au prochain scan...");
+          }
         } else {
-          // Un seul visage - Tout est OK
+          // Un seul visage - OK
+          _multiPersonCount = 0;
           updateStatusUI('success');
           resetWarning();
         }
