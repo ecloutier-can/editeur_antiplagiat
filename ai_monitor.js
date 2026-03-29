@@ -11,7 +11,9 @@
   let _intervalId = null;
   let _config = null;
   let _startTime = null;
-  let _multiPersonCount = 0; // Compteur pour la confirmation temporelle (Persistence)
+  let _multiPersonCount = 0; 
+  let _absenceCount = 0;    // Nouveau: Compteur pour l'absence contextuelle
+  let _lastTypingTime = 0;  // Nouveau: Horodatage de la dernière frappe
   
   // Timer state
   let _isWarningActive = false;
@@ -31,7 +33,7 @@
     if (!_statusEl) return;
     
     // Nettoyer les classes IA
-    _statusEl.classList.remove('off', 'ai-searching', 'ai-success', 'ai-warn');
+    _statusEl.classList.remove('off', 'ai-searching', 'ai-success', 'ai-warn', 'ai-uncertain');
     
     let labelText = "";
     switch(state) {
@@ -42,6 +44,10 @@
       case 'success':
         _statusEl.classList.add('ai-success');
         labelText = " IA : Visage OK";
+        break;
+      case 'uncertain':
+        _statusEl.classList.add('ai-uncertain');
+        labelText = " IA : Présent ?";
         break;
       case 'warn':
         _statusEl.classList.add('ai-warn');
@@ -144,35 +150,45 @@
       // 3. Délai de grâce initial
       if (Date.now() - _startTime < 3000) return;
 
+      // 4. Contexte de frappe (Proposition 1)
+      const isTyping = (Date.now() - _lastTypingTime < 5000);
+
       try {
-        // 4. Estimation BlazeFace
+        // 5. Estimation BlazeFace
         const predictions = await _model.estimateFaces(_aiVideo, false);
         
-        // --- HYBRIDE ÉTAPE 1 : Filtre de confiance à 0.5 ---
         let validFaces = predictions.filter(p => {
           const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
           return score > 0.5;
         });
 
-        // --- HYBRIDE ÉTAPE 2 : Fusion des doublons (IOU) ---
         validFaces = filterDuplicates(validFaces);
 
+        // --- NOUVELLE LOGIQUE CONTEXTUELLE (Propositions 1 & 4) ---
         if (validFaces.length === 0) {
-          _multiPersonCount = 0;
-          updateStatusUI('warn');
-          triggerWarning();
+          _absenceCount++;
+          const threshold = isTyping ? 4 : 2; // Plus permissif si l'étudiant tape (v23)
+          
+          if (_absenceCount >= threshold) {
+            updateStatusUI('warn');
+            triggerWarning();
+          } else {
+            updateStatusUI('uncertain'); // État Orange (Proposition 4)
+            console.log("🤖 IA: Présence incertaine (" + _absenceCount + "/" + threshold + ")");
+          }
         } else if (validFaces.length > 1) {
           _multiPersonCount++;
-          // --- HYBRIDE ÉTAPE 3 : Persistence temporelle ---
+          _absenceCount = 0; 
           if (_multiPersonCount >= 2) {
             infractionDetected("Multi-personnes confirmées par l'IA (" + validFaces.length + ")");
             updateStatusUI('warn');
             resetWarning();
           } else {
-            console.log("🤖 IA: Anomalie suspectée (1/2), confirmation au prochain scan...");
+            updateStatusUI('uncertain');
           }
         } else {
           // Un seul visage - OK
+          _absenceCount = 0;
           _multiPersonCount = 0;
           updateStatusUI('success');
           resetWarning();
@@ -228,6 +244,11 @@
       window.capturePhoto('ALERTE IA: ' + reason);
     }
   }
+
+  // Écouteur global de frappe pour la corrélation (Proposition 1)
+  document.addEventListener('keydown', () => {
+    _lastTypingTime = Date.now();
+  }, { passive: true });
 
   // Écouter l'événement Global de chargement de conf
   window.addEventListener('scorm_config_ready', (e) => {
