@@ -3,7 +3,7 @@
  * Implements reliable face tracking with visual student feedback.
  */
 
-(function() {
+(function () {
   'use strict';
 
   let _model = null;
@@ -11,10 +11,10 @@
   let _intervalId = null;
   let _config = null;
   let _startTime = null;
-  let _multiPersonCount = 0; 
+  let _multiPersonCount = 0;
   let _absenceCount = 0;    // Nouveau: Compteur pour l'absence contextuelle
   let _lastTypingTime = 0;  // Nouveau: Horodatage de la dernière frappe
-  
+
   // Timer state
   let _isWarningActive = false;
   let _countdownValue = 5;
@@ -31,12 +31,12 @@
    */
   function updateStatusUI(state) {
     if (!_statusEl) return;
-    
+
     // Nettoyer les classes IA
     _statusEl.classList.remove('off', 'ai-searching', 'ai-success', 'ai-warn', 'ai-uncertain');
-    
+
     let labelText = "";
-    switch(state) {
+    switch (state) {
       case 'searching':
         _statusEl.classList.add('ai-searching');
         labelText = " IA : Analyse...";
@@ -57,7 +57,7 @@
         _statusEl.classList.add('off');
         labelText = " IA : Désactivée";
     }
-    
+
     // Mise à jour robuste de l'affichage
     _statusEl.innerHTML = '<span class="hst-dot"></span>' + labelText;
   }
@@ -86,17 +86,17 @@
    */
   function filterDuplicates(predictions) {
     if (predictions.length <= 1) return predictions;
-    
+
     let filtered = [];
     for (let i = 0; i < predictions.length; i++) {
-        let isDuplicate = false;
-        for (let j = 0; j < filtered.length; j++) {
-            if (calculateIOU(predictions[i], filtered[j]) > 0.4) { // Seuil IOU à 40%
-                isDuplicate = true;
-                break;
-            }
+      let isDuplicate = false;
+      for (let j = 0; j < filtered.length; j++) {
+        if (calculateIOU(predictions[i], filtered[j]) > 0.4) { // Seuil IOU à 40%
+          isDuplicate = true;
+          break;
         }
-        if (!isDuplicate) filtered.push(predictions[i]);
+      }
+      if (!isDuplicate) filtered.push(predictions[i]);
     }
     return filtered;
   }
@@ -124,7 +124,7 @@
   function startMonitoring() {
     // On utilise l'intervalle configuré ou 4s par défaut
     const interval = (_config && _config.security && _config.security.aiScanInterval) || 4000;
-    
+
     _intervalId = setInterval(async () => {
       // 1. Logic Check: est-on en train de passer l'examen?
       if (typeof window.isAIAllowed === 'function' && !window.isAIAllowed()) {
@@ -139,11 +139,11 @@
 
       if (_aiVideo.srcObject !== stream) {
         _aiVideo.srcObject = stream;
-        _aiVideo.play().catch(() => {});
+        _aiVideo.play().catch(() => { });
       }
 
       if (_aiVideo.paused || _aiVideo.readyState < 2 || _aiVideo.videoWidth === 0) {
-        _aiVideo.play().catch(() => {});
+        _aiVideo.play().catch(() => { });
         return;
       }
 
@@ -156,7 +156,7 @@
       try {
         // 5. Estimation BlazeFace
         const predictions = await _model.estimateFaces(_aiVideo, false);
-        
+
         let validFaces = predictions.filter(p => {
           const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
           return score > 0.5;
@@ -168,7 +168,7 @@
         if (validFaces.length === 0) {
           _absenceCount++;
           const threshold = isTyping ? 4 : 2; // Plus permissif si l'étudiant tape (v23)
-          
+
           if (_absenceCount >= threshold) {
             updateStatusUI('warn');
             triggerWarning();
@@ -178,7 +178,7 @@
           }
         } else if (validFaces.length > 1) {
           _multiPersonCount++;
-          _absenceCount = 0; 
+          _absenceCount = 0;
           if (_multiPersonCount >= 2) {
             infractionDetected("Multi-personnes confirmées par l'IA (" + validFaces.length + ")");
             updateStatusUI('warn');
