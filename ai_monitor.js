@@ -93,7 +93,7 @@
     for (let i = 0; i < predictions.length; i++) {
       let isDuplicate = false;
       for (let j = 0; j < filtered.length; j++) {
-        if (calculateIOU(predictions[i], filtered[j]) > 0.25) { // Seuil IOU à 25% (plus agressif pour fusionner)
+        if (calculateIOU(predictions[i], filtered[j]) > 0.1) { // Seuil IOU à 10% (très agressif pour fusionner les doublons)
           isDuplicate = true;
           break;
         }
@@ -169,10 +169,27 @@
 
         let validFaces = predictions.filter(p => {
           const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
-          return score > 0.85; // Seuil de confiance strict pour éviter les faux positifs (ghosts)
+          return score > 0.9; // Seuil de confiance relevé à 0.9 pour filtrer le bruit
         });
 
         validFaces = filterDuplicates(validFaces);
+
+        // --- FILTRAGE PAR TAILLE RELATIVE (Nouveau v2.6) ---
+        if (validFaces.length > 1) {
+          // Calculer les surfaces
+          const facesWithArea = validFaces.map(f => {
+            const area = (f.bottomRight[0] - f.topLeft[0]) * (f.bottomRight[1] - f.topLeft[1]);
+            return { face: f, area };
+          });
+          
+          // Trouver la surface max
+          const maxArea = Math.max(...facesWithArea.map(f => f.area));
+          
+          // Ne garder que les visages qui font au moins 25% de la taille du visage principal
+          validFaces = facesWithArea
+            .filter(f => f.area >= (maxArea * 0.25))
+            .map(f => f.face);
+        }
 
         // --- NOUVELLE LOGIQUE CONTEXTUELLE (Seuils adaptatifs) ---
         if (validFaces.length === 0) {
@@ -195,7 +212,7 @@
         } else if (validFaces.length > 1) {
           _multiPersonCount++;
           _absenceCount = 0;
-          if (_multiPersonCount >= 3) { // Exiger 3 confirmations
+          if (_multiPersonCount >= 5) { // Exiger 5 confirmations consécutives (20s)
             infractionDetected("Multi-personnes confirmées par l'IA (" + validFaces.length + ")");
             updateStatusUI('warn');
             resetWarning();
