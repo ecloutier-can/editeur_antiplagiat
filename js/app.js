@@ -741,6 +741,11 @@ function restoreDraftLocal() {
     if (obj.S.focus !== undefined) S.focus = obj.S.focus;
     if (obj.S.screenshots !== undefined) S.screenshots = obj.S.screenshots;
     if (obj.S.absentMs !== undefined) S.absentMs = obj.S.absentMs;
+
+    // Réinitialisation de la soumission pour permettre la poursuite après restauration
+    S.submitted = false;
+    S.submitTime = null;
+    localStorage.removeItem('scorm_editor_submitted');
     
     // Compensation du temps d'arrêt
     let timeLostMs = Date.now() - timeSaved;
@@ -1407,6 +1412,12 @@ async function testScreenPreflight() {
 }
 
 async function startExamReal(){
+  // Réinitialisation de l'état de soumission pour le nouvel essai
+  S.submitted = false;
+  S.submitTime = null;
+  // Nettoyage des indicateurs de soumission dans le localStorage
+  localStorage.removeItem('scorm_editor_submitted');
+
   // Purge préventive si un ancien draft n'a pas été restauré (ignorer le brouillon)
   const zone = document.getElementById('draft-restore-zone');
   if (zone && zone.style.display !== 'none') {
