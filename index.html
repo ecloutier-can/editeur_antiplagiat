@@ -1129,8 +1129,9 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
 <!-- ── ÉCRAN D'ACCUEIL ──────────────────────────────── -->
 <div id="welcome">
   <div id="welcome-box">
-    <h1>📝 Éditeur d'évaluation sécurisée</h1>
-    <div class="wc-sub" style="margin-bottom:12px">Évaluation de rédaction — Moodle 4.5</div>
+    <img src="logo.png" alt="Veritas" style="max-height: 180px; margin-bottom: 20px;">
+
+
 
     <!-- ZONE DE RÉCUPÉRATION (Promue au sommet) -->
     <div id="draft-restore-zone" style="display:none; flex-direction:column; align-items:center; gap:12px; background:rgba(37, 99, 235, 0.05); padding:20px; border-radius:16px; border:1px solid rgba(37, 99, 235, 0.2); margin: 20px 0; animation: fadeIn 0.5s ease;">
@@ -1186,7 +1187,8 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
         <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer; text-align: left;">
           <input type="checkbox" id="chk-agree" onchange="checkStartReady()" style="margin-top: 4px; transform: scale(1.3)">
           <span style="font-size: 13px; color: var(--text-2); line-height: 1.4;">
-            Je m'engage à rédiger ce travail moi-même, sans aide externe ou IA générative, conformément au code d'honneur du Cégep de Matane.
+            Je m'engage à rédiger ce travail moi-même, sans aide externe ou ia générative, conformément aux consigne de mon enseignant.
+
           </span>
         </label>
       </div>
@@ -1195,7 +1197,8 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
     <div class="wc-checklist" style="background: rgba(0,0,0,0.02); border-style: dashed;">
       <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-3); display: flex; align-items: center; gap: 8px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        Pré-flight : Validation technique
+        Validation technique
+
       </h3>
       
       <div class="cl-item">
@@ -1273,7 +1276,8 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   <!-- EN-TÊTE IDENTITÉ — nom bien visible -->
   <div class="pf-h">
     <div class="pf-identity">
-      <div class="pf-logo">📝 Évaluation de rédaction — Moodle 4.5</div>
+      <div class="pf-logo">Veritas — Éditeur de confiance</div>
+
       <div class="pf-nom-big" id="pf-nom-big">—</div>
       <div class="pf-id-line">Identifiant Moodle : <span id="pf-id">—</span></div>
     </div>
@@ -1330,7 +1334,8 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   <div id="pf-journal-list"></div>
 
   <div class="pf-ft">
-    Éditeur sécurisé anti-plagiat v1.6.0 — Moodle 4.5 |
+    Veritas — Éditeur de confiance |
+
     Étudiant : <span id="pf-ft-nom">—</span> |
     Début : <span id="pf-ft-start">—</span> |
     Fin : <span id="pf-ft-end">—</span>
@@ -1341,9 +1346,9 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
 <div id="hdr">
   <div id="hdr-left">
     <div id="hdr-logo">
-      <div id="hdr-logo-mark">A</div>
-      <span>AntiPlagiat <span style="opacity:0.5;font-weight:400">Editor</span></span>
+      <img src="logo.png" alt="Veritas" style="height: 48px;">
     </div>
+
     <div id="hdr-status">
       <span class="hst off" id="cam-status"><span class="hst-dot"></span>Caméra active</span>
       <span class="hst off" id="snd-status"><span class="hst-dot"></span>Son</span>
