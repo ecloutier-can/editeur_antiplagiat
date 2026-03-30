@@ -1,5 +1,5 @@
 /*
-  SCORM 1.2 API Wrapper — Éditeur Anti-Plagiat v2.0.0
+  SCORM 1.2 API Wrapper — Veritas — Éditeur de confiance v2.0.0
   Support Multi-Environnement : Moodle (SCORM) & Standalone (GitHub Pages)
 */
 
@@ -89,8 +89,8 @@ var SCORM = (function () {
     },
 
     getStudentName: function () { 
-      if (_isStandalone) return 'Étudiant (Démo)';
-      return this.get('cmi.core.student_name') || 'Étudiant'; 
+      if (_isStandalone) return 'Étudiant(e) (Démo)';
+      return this.get('cmi.core.student_name') || 'Étudiant(e)'; 
     },
     getStudentId:   function () { 
       if (_isStandalone) return 'github_demo_id';

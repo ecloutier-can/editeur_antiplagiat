@@ -1,6 +1,6 @@
 {
   "version": "2.0.0-beta",
-  "appName": "Éditeur Anti-plagiat Premium",
+  "appName": "Veritas — Éditeur de confiance",
   "security": {
     "blockContextMenu": true,
     "blockShortcuts": ["F12", "Control+U", "Control+P", "Meta+P", "Control+Shift+I"],

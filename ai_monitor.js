@@ -39,11 +39,11 @@
     switch (state) {
       case 'searching':
         _statusEl.classList.add('ai-searching');
-        labelText = " IA : Analyse...";
+        labelText = " IA : Analyse en cours…";
         break;
       case 'success':
         _statusEl.classList.add('ai-success');
-        labelText = " IA : Visage OK";
+        labelText = " IA : Visage détecté";
         break;
       case 'uncertain':
         _statusEl.classList.add('ai-uncertain');
@@ -51,7 +51,7 @@
         break;
       case 'warn':
         _statusEl.classList.add('ai-warn');
-        labelText = " IA : Absence !";
+        labelText = " IA : Absence détectée";
         break;
       default:
         _statusEl.classList.add('off');
@@ -220,7 +220,7 @@
       }
 
       if (_countdownValue <= 0) {
-        infractionDetected("Absence prolongée (+5s) détectée par l'IA.");
+        infractionDetected("Absence prolongée (+5 s) détectée par l'IA.");
         resetWarning();
       }
     }, 1000);
