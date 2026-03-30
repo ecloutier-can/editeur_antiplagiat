@@ -91,7 +91,7 @@
     for (let i = 0; i < predictions.length; i++) {
       let isDuplicate = false;
       for (let j = 0; j < filtered.length; j++) {
-        if (calculateIOU(predictions[i], filtered[j]) > 0.4) { // Seuil IOU à 40%
+        if (calculateIOU(predictions[i], filtered[j]) > 0.2) { // Seuil IOU à 20% (plus agressif pour fusionner)
           isDuplicate = true;
           break;
         }
@@ -159,7 +159,7 @@
 
         let validFaces = predictions.filter(p => {
           const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
-          return score > 0.5;
+          return score > 0.8; // Seuil augmenté pour filtrer les objets de fond
         });
 
         validFaces = filterDuplicates(validFaces);
@@ -167,7 +167,8 @@
         // --- NOUVELLE LOGIQUE CONTEXTUELLE (Propositions 1 & 4) ---
         if (validFaces.length === 0) {
           _absenceCount++;
-          const threshold = isTyping ? 4 : 2; // Plus permissif si l'étudiant tape (v23)
+          _multiPersonCount = 0; // Réinitialisation de sécurité en cas d'absence
+          const threshold = isTyping ? 4 : 2; // Plus permissif si l'étudiant tape (v2.3)
 
           if (_absenceCount >= threshold) {
             updateStatusUI('warn');
@@ -179,7 +180,7 @@
         } else if (validFaces.length > 1) {
           _multiPersonCount++;
           _absenceCount = 0;
-          if (_multiPersonCount >= 2) {
+          if (_multiPersonCount >= 3) { // Exiger 3 confirmations (12 secondes)
             infractionDetected("Multi-personnes confirmées par l'IA (" + validFaces.length + ")");
             updateStatusUI('warn');
             resetWarning();
