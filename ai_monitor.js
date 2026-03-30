@@ -93,7 +93,7 @@
     for (let i = 0; i < predictions.length; i++) {
       let isDuplicate = false;
       for (let j = 0; j < filtered.length; j++) {
-        if (calculateIOU(predictions[i], filtered[j]) > 0.2) { // Seuil IOU à 20% (plus agressif pour fusionner)
+        if (calculateIOU(predictions[i], filtered[j]) > 0.25) { // Seuil IOU à 25% (plus agressif pour fusionner)
           isDuplicate = true;
           break;
         }
@@ -169,7 +169,7 @@
 
         let validFaces = predictions.filter(p => {
           const score = Array.isArray(p.probability) ? p.probability[0] : p.probability;
-          return score > 0.8; // Seuil augmenté pour filtrer les objets de fond
+          return score > 0.85; // Seuil de confiance strict pour éviter les faux positifs (ghosts)
         });
 
         validFaces = filterDuplicates(validFaces);
@@ -177,7 +177,6 @@
         // --- NOUVELLE LOGIQUE CONTEXTUELLE (Seuils adaptatifs) ---
         if (validFaces.length === 0) {
           _absenceCount++;
-          _multiPersonCount = 0; 
           
           let threshold = 2; // Par défaut (8s)
           if (isTyping) {
