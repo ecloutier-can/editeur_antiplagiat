@@ -12,8 +12,9 @@
   let _config = null;
   let _startTime = null;
   let _multiPersonCount = 0;
-  let _absenceCount = 0;    // Nouveau: Compteur pour l'absence contextuelle
-  let _lastTypingTime = 0;  // Nouveau: Horodatage de la dernière frappe
+  let _absenceCount = 0;    // Compteur pour l'absence contextuelle
+  let _lastTypingTime = 0;  // Horodatage de la dernière frappe
+  let _isEditorFocused = false; // Suivi du focus sur l'éditeur principal
 
   // Timer state
   let _isWarningActive = false;
@@ -24,6 +25,7 @@
   const _overlay = document.getElementById('ai-warning');
   const _timerEl = document.getElementById('ai-timer');
   const _statusEl = document.getElementById('ai-status');
+  const _editor = document.getElementById('ed');
 
   /**
    * Update the UI indicator in the header
@@ -110,6 +112,14 @@
       console.log("🤖 IA: Chargement du modèle BlazeFace...");
       _model = await blazeface.load();
       console.log("✅ IA: Modèle chargé.");
+
+      // Setup editor listeners if available
+      if (_editor) {
+        _isEditorFocused = (document.activeElement === _editor);
+        _editor.addEventListener('focus', () => { _isEditorFocused = true; });
+        _editor.addEventListener('blur', () => { _isEditorFocused = false; });
+      }
+
       updateStatusUI('searching');
       _startTime = Date.now();
       startMonitoring();
@@ -150,8 +160,8 @@
       // 3. Délai de grâce initial
       if (Date.now() - _startTime < 3000) return;
 
-      // 4. Contexte de frappe (Proposition 1)
-      const isTyping = (Date.now() - _lastTypingTime < 5000);
+      // 4. Contexte de frappe et focus (Seuils persistants v2.5)
+      const isTyping = (Date.now() - _lastTypingTime < 10000); // 10s pour couvrir les pauses de réflexion
 
       try {
         // 5. Estimation BlazeFace
@@ -164,23 +174,29 @@
 
         validFaces = filterDuplicates(validFaces);
 
-        // --- NOUVELLE LOGIQUE CONTEXTUELLE (Propositions 1 & 4) ---
+        // --- NOUVELLE LOGIQUE CONTEXTUELLE (Seuils adaptatifs) ---
         if (validFaces.length === 0) {
           _absenceCount++;
-          _multiPersonCount = 0; // Réinitialisation de sécurité en cas d'absence
-          const threshold = isTyping ? 4 : 2; // Plus permissif si l'étudiant tape (v2.3)
+          _multiPersonCount = 0; 
+          
+          let threshold = 2; // Par défaut (8s)
+          if (isTyping) {
+            threshold = 8; // Saisie active (32s)
+          } else if (_isEditorFocused) {
+            threshold = 4; // Focus sans frappe (16s)
+          }
 
           if (_absenceCount >= threshold) {
             updateStatusUI('warn');
-            triggerWarning();
+            triggerWarning(isTyping);
           } else {
-            updateStatusUI('uncertain'); // État Orange (Proposition 4)
-            console.log("🤖 IA: Présence incertaine (" + _absenceCount + "/" + threshold + ")");
+            updateStatusUI('uncertain'); 
+            console.log("🤖 IA: Présence incertaine (" + _absenceCount + "/" + threshold + ") Focus:" + _isEditorFocused + " Typing:" + isTyping);
           }
         } else if (validFaces.length > 1) {
           _multiPersonCount++;
           _absenceCount = 0;
-          if (_multiPersonCount >= 3) { // Exiger 3 confirmations (12 secondes)
+          if (_multiPersonCount >= 3) { // Exiger 3 confirmations
             infractionDetected("Multi-personnes confirmées par l'IA (" + validFaces.length + ")");
             updateStatusUI('warn');
             resetWarning();
@@ -203,7 +219,7 @@
   /**
    * Gestion du compte à rebours de 5 secondes
    */
-  function triggerWarning() {
+  function triggerWarning(isTyping) {
     if (_isWarningActive) return;
 
     _isWarningActive = true;
@@ -215,9 +231,11 @@
       _countdownValue--;
       updateTimerUI();
 
-      // Alerte sonore si disponible
+      // Alerte sonore modulée selon le contexte
       if (typeof window.playBip === 'function') {
-        window.playBip(880, 0, 0.1, 0.2, 'sine');
+        const freq = isTyping ? 440 : 880; // Fréquence plus grave/discrète si on frappe
+        const vol = isTyping ? 0.05 : 0.2; // Volume réduit si on frappe
+        window.playBip(freq, 0, 0.08, vol, 'sine');
       }
 
       if (_countdownValue <= 0) {
@@ -246,7 +264,7 @@
     }
   }
 
-  // Écouteur global de frappe pour la corrélation (Proposition 1)
+  // Écouteur global de frappe pour la corrélation
   document.addEventListener('keydown', () => {
     _lastTypingTime = Date.now();
   }, { passive: true });
