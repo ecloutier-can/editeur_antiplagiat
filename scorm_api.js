@@ -32,13 +32,27 @@ var SCORM = (function () {
 
   /* ── Configuration ────────────────────────── */
   async function loadConfig() {
+    // Start with default config if available
+    _config = window.DEFAULT_CONFIG || { security: {}, pedagogy: {}, ui: {}, messages: {} };
+    
     try {
       const response = await fetch('config.json');
-      _config = await response.json();
-      console.log("Config loaded:", _config);
+      if (response.ok) {
+        const remoteConfig = await response.json();
+        // Simple merge: remote config overrides defaults
+        _config = { ..._config, ...remoteConfig };
+        // Deep merge for sub-objects
+        if (remoteConfig.security) _config.security = { ..._config.security, ...remoteConfig.security };
+        if (remoteConfig.pedagogy) _config.pedagogy = { ..._config.pedagogy, ...remoteConfig.pedagogy };
+        if (remoteConfig.ui) _config.ui = { ..._config.ui, ...remoteConfig.ui };
+        if (remoteConfig.messages) _config.messages = { ..._config.messages, ...remoteConfig.messages };
+        
+        console.log("Config loaded from config.json and merged:", _config);
+      } else {
+        console.warn("config.json not found (normal in local), using DEFAULT_CONFIG.");
+      }
     } catch (e) {
-      console.error("Failed to load config.json, using defaults.", e);
-      _config = { security: {}, pedagogy: {}, ui: {}, messages: {} };
+      console.error("Failed to load config.json, using DEFAULT_CONFIG.", e);
     }
     // Dispatch event to notify that config is ready
     window.dispatchEvent(new CustomEvent('scorm_config_ready', { detail: _config }));
