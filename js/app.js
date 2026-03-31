@@ -613,6 +613,7 @@ function exportPlagiatFile() {
 }
 
 function importPlagiatFile(event) {
+  prepareInternalAction();
   const file = event.target.files[0];
   if (!file) return;
   
@@ -778,12 +779,19 @@ function restoreDraftLocal() {
 }
 
 function manualSave(quiet) {
+  prepareInternalAction();
   autoSave();
   exportPlagiatFile();
   if(!quiet) {
     playAlert('save');
     showToast('Sauvegardé ✓ (Fichier .plagiat téléchargé)');
   }
+}
+
+function triggerImport() {
+  prepareInternalAction();
+  const input = document.getElementById('file-import');
+  if (input) input.click();
 }
 function setSave(st){
   var el=document.getElementById('save-ind');
@@ -802,6 +810,14 @@ function setSave(st){
    ANTI-PLAGIAT
 ═══════════════════════════════════════════════ */
 var _banT=null;
+var _isInternalAction = false;
+
+function prepareInternalAction() {
+  _isInternalAction = true;
+  // Sécurité au cas où le focus ne revient jamais (ex: dialogue système qui reste ouvert)
+  setTimeout(() => { _isInternalAction = false; }, 10000);
+}
+
 function showBanner(){
   document.getElementById('alert-banner').classList.add('v');
   if(_banT)clearTimeout(_banT);
@@ -830,7 +846,7 @@ function setupAP(){
   var _absentTabLogged = false;
 
   function onAbsentStart(reason, isFocusLoss) {
-    if(!_apReady || S.submitted || _isPaused) return;
+    if(!_apReady || S.submitted || _isPaused || _isInternalAction) return;
 
     if(isFocusLoss && !_absentFocusLogged) {
       // Ne pas incrémenter ni loguer le focus si on consulte une ressource autorisée
@@ -858,6 +874,7 @@ function setupAP(){
   }
 
   function onAbsentEnd(reason) {
+    _isInternalAction = false;
     if(!_apReady || !_absentStart) return;
     var now = Date.now();
     var ms = now - _absentStart;
@@ -1219,6 +1236,7 @@ setInterval(function(){
    IMPRESSION
 ═══════════════════════════════════════════════ */
 function printDoc(){
+  prepareInternalAction();
   fillPrintFrame();
   var was = hideOverlays();
   setTimeout(function(){
@@ -1631,6 +1649,7 @@ function hidePdfProgress(){
 }
 
 function exportPDF(){
+  prepareInternalAction();
   showPdfProgress('Préparation...', 'Extraction du contenu', 15);
   fillPrintFrame();
 
