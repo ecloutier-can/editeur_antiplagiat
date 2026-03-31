@@ -1892,6 +1892,7 @@ window.toggleTTS=toggleTTS;
 window.updTb=updTb;
 window.log=log;
 window.capturePhoto=capturePhoto;
+window.triggerImport=triggerImport;
 window.getCameraStream = function() { return _camStream; };
 window.playBip = _bip;
 window.isAIAllowed = function() { return _monitoringActive && !_isPaused && !S.submitted; };
