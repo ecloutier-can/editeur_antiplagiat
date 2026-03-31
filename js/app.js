@@ -874,8 +874,12 @@ function setupAP(){
   }
 
   function onAbsentEnd(reason) {
-    _isInternalAction = false;
-    if(!_apReady || !_absentStart) return;
+    if(!_apReady || !_absentStart) {
+      // Si on n'était pas vraiment "parti", on ne réinitialise pas forcément _isInternalAction
+      // car un micro-focus peut arriver pendant l'ouverture d'un dialogue système.
+      return;
+    }
+    _isInternalAction = false; // Réinitialisation seulement après un retour réel
     var now = Date.now();
     var ms = now - _absentStart;
     S.absentMs += ms;
@@ -915,7 +919,7 @@ function setupAP(){
 
   /* Bogue SCORM/Moodle : Boucle active de vérification du focus (Polling) */
   setInterval(function() {
-    if(!_apReady || S.submitted || _isPaused) return;
+    if(!_apReady || S.submitted || _isPaused || _isInternalAction) return;
 
     if (document.hidden) {
       onAbsentStart('Onglet caché ou fenêtre réduite (Détection active)', false);
