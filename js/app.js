@@ -833,8 +833,11 @@ function setupAP(){
     if(!_apReady || S.submitted || _isPaused) return;
 
     if(isFocusLoss && !_absentFocusLogged) {
-      S.focus++;
-      log('PERTE DE FOCUS / APPLI', reason, 'd');
+      // Ne pas incrémenter ni loguer le focus si on consulte une ressource autorisée
+      if (!_curRes) {
+        S.focus++;
+        log('PERTE DE FOCUS / APPLI', reason, 'd');
+      }
       _absentFocusLogged = true;
     } else if(!isFocusLoss && !_absentTabLogged) {
       S.tabs++;
@@ -844,7 +847,11 @@ function setupAP(){
 
     if(_absentStart) return;
     _absentStart = Date.now();
-    playAlert('leave');
+    
+    if (!_curRes) {
+      playAlert('leave');
+    }
+    
     showBanner();
     capturePhoto('Départ : ' + reason);
     updLog();
