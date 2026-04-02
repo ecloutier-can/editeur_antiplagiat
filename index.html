@@ -560,21 +560,39 @@
 <!-- Modal de Verrouillage des Ressources -->
 <div id="res-modal">
   <div id="res-modal-box">
-    <div class="res-modal-icon" id="rm-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    <div id="res-modal-intro">
+      <div class="res-modal-icon" id="rm-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      </div>
+      <div class="res-modal-title" id="rm-title">Nom de la ressource</div>
+      <div class="res-modal-desc" id="rm-desc">
+        Vous consultez actuellement cette ressource. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité de l'examen.
+      </div>
+      <div class="res-modal-btns" id="rm-btns-start">
+        <button class="rm-btn rm-btn-primary" id="rm-btn-load">
+          <span>Consulter dans l'éditeur</span>
+        </button>
+        <button class="rm-btn rm-btn-finish" onclick="finishRes()">
+          <span>Annuler / Retour</span>
+        </button>
+      </div>
     </div>
-    <div class="res-modal-title" id="rm-title">Nom de la ressource</div>
-    <div class="res-modal-desc" id="rm-desc">
-      Vous consultez actuellement cette ressource. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité de l'examen.
-    </div>
-    <div class="res-modal-btns">
-      <button class="rm-btn rm-btn-primary" id="rm-btn-open">
-        <span>Ouvrir la ressource</span>
-        <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </button>
-      <button class="rm-btn rm-btn-finish" onclick="finishRes()">
-        <span>J'ai terminé / Retour à l'éditeur</span>
-      </button>
+
+    <!-- Conteneur de l'Iframe -->
+    <div id="res-frame-container" style="display:none">
+      <div id="res-frame-header">
+        <span id="res-frame-title">Aperçu de la ressource</span>
+        <button class="rm-btn-mini" id="rm-btn-external" title="Ouvrir dans un nouvel onglet (secours)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </button>
+      </div>
+      <div id="res-frame-loader">Chargement de la ressource...</div>
+      <iframe id="res-iframe" sandbox="allow-scripts allow-same-origin allow-forms" frameborder="0"></iframe>
+      <div id="res-frame-footer">
+        <button class="rm-btn rm-btn-finish" onclick="finishRes()">
+          <span>Quitter la ressource et revenir à l'éditeur</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

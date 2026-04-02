@@ -637,7 +637,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
 }
 #res-modal.v { display: flex; }
 #res-modal-box {
-  background: rgba(30,30,35, 0.85);
+  background: rgba(30,30,35, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
@@ -647,7 +647,92 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   text-align: center;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
   animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
+
+/* État agrandi pour l'iframe */
+#res-modal-box.expanded {
+  max-width: 1280px;
+  width: 95%;
+  height: 92%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+}
+
+#res-modal-intro { transition: opacity 0.3s; }
+#res-modal-box.expanded #res-modal-intro { display: none; }
+
+#res-frame-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  text-align: left;
+}
+
+#res-frame-header {
+  padding: 10px 16px;
+  background: #1e1e22;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#res-frame-title {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#res-iframe {
+  flex: 1;
+  width: 100%;
+  background: #fff;
+  border: none;
+}
+
+#res-frame-footer {
+  padding: 12px;
+  background: #1e1e22;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+}
+
+#res-frame-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  z-index: 0;
+}
+
+.rm-btn-mini {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.rm-btn-mini:hover { background: rgba(255, 255, 255, 0.2); }
+.rm-btn-mini svg { width: 16px; height: 16px; }
+
 .res-modal-icon {
   width: 64px;
   height: 64px;

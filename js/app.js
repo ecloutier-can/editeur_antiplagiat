@@ -1135,20 +1135,25 @@ function openRes(key){
  */
 function showResModal(res) {
   const modal = document.getElementById('res-modal');
+  const modalBox = document.getElementById('res-modal-box');
+  const intro = document.getElementById('res-modal-intro');
+  const frameCont = document.getElementById('res-frame-container');
+  const iframe = document.getElementById('res-iframe');
+  const fbBtn = document.getElementById('rm-btn-external');
+  const loadBtn = document.getElementById('rm-btn-load');
   const title = document.getElementById('rm-title');
-  const desc = document.getElementById('rm-desc');
-  const openBtn = document.getElementById('rm-btn-open');
+  const frameTitle = document.getElementById('res-frame-title');
   const iconCont = document.getElementById('rm-icon');
-  const finishBtn = document.querySelector('.rm-btn-finish');
-  
-  title.textContent = res.title;
-  desc.innerHTML = `Vous consultez actuellement <strong>${res.title}</strong>. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité. Cliquez sur le bouton ci-dessous pour ouvrir la ressource.`;
-  
-  // État initial des boutons
-  openBtn.style.display = 'flex';
-  finishBtn.style.display = 'flex';
-  finishBtn.querySelector('span').textContent = "Annuler / Retour à l'éditeur";
-  
+
+  // Reset de l'état initial
+  modalBox.classList.remove('expanded');
+  intro.style.display = 'block';
+  frameCont.style.display = 'none';
+  iframe.src = 'about:blank';
+
+  if (title) title.textContent = res.title;
+  if (frameTitle) frameTitle.textContent = res.title;
+
   // Icône dynamique
   let iconSvg = '';
   if (res.icon === 'book') {
@@ -1158,30 +1163,22 @@ function showResModal(res) {
   } else {
     iconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
   }
-  iconCont.innerHTML = iconSvg;
+  if (iconCont) iconCont.innerHTML = iconSvg;
 
-  openBtn.onclick = function() {
-    _popupWin = window.open(res.url, 'ressource_auth', 'width=1000,height=750,toolbar=0,menubar=0,location=0,status=0,scrollbars=1,resizable=1');
-    if(!_popupWin){
-      showToast('⚠️ Autorisez les popups dans votre navigateur.');
-      return;
-    }
-    
-    // Forcer l'étudiant à fermer le popup pour déverrouiller
-    openBtn.style.display = 'none';
-    finishBtn.style.display = 'none';
-    desc.innerHTML = `La ressource <strong>${res.title}</strong> est ouverte dans une fenêtre séparée.<br><br><span style="color:#6ee7b7">Vous devez <strong>fermer cette fenêtre popup</strong> pour déverrouiller l'éditeur.</span>`;
-    
-    // Surveiller la fermeture de la fenêtre
-    let _popupPoll = setInterval(function(){
-      if(!_popupWin || _popupWin.closed){
-        clearInterval(_popupPoll);
-        _popupWin = null;
-        finishRes(); // Fermeture automatique et log
-      }
-    }, 1000);
+  // Action : Charger dans l'iframe
+  loadBtn.onclick = function() {
+    modalBox.classList.add('expanded');
+    intro.style.display = 'none';
+    frameCont.style.display = 'flex';
+    iframe.src = res.url;
   };
-  
+
+  // Action : Ouverture externe (secours)
+  fbBtn.onclick = function() {
+    window.open(res.url, 'res_ext_' + Date.now());
+    log('RESSOURCE EXTERNE', 'Ouverture en secours de ' + res.title, 'i');
+  };
+
   modal.classList.add('v');
 }
 
@@ -1197,11 +1194,19 @@ function finishRes() {
     log('RESSOURCE FERMÉE', (RURL[key]?RURL[key].label:key) + ' — durée : ' + fmtDur(dur), 'i');
     updLog(); updResSummary();
   }
-  document.getElementById('res-modal').classList.remove('v');
+  
+  // Nettoyage de l'iframe (coupe le son/vidéo)
+  const iframe = document.getElementById('res-iframe');
+  if(iframe) iframe.src = 'about:blank';
+  
+  const modalBox = document.getElementById('res-modal-box');
+  if(modalBox) modalBox.classList.remove('expanded');
+  
+  const modal = document.getElementById('res-modal');
+  if(modal) modal.classList.remove('v');
+  
   _curRes = null;
 }
-
-
 /* Formater une durée en secondes → "1m 34s" ou "45s" */
 function fmtDur(s){
   if(s<60) return s+'s';
