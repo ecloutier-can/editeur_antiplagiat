@@ -225,7 +225,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   display:flex;flex-direction:column;overflow:hidden;
   box-shadow:-4px 0 30px rgba(0,0,0,0.2)}
 
-#ptabs{display:grid;grid-template-columns:1fr 1fr 1fr;
+#ptabs{display:grid;grid-template-columns:repeat(4, 1fr);
   border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(0,0,0,0.03)}
 .ptab{padding:12px 2px;border:none;background:transparent;cursor:pointer;
   color:var(--text-3);border-bottom:2px solid transparent;
@@ -333,8 +333,13 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   outline: none;
   transition: border-color 0.2s;
 }
-#student-name:focus {
+#student-name:focus, #student-consigne:focus {
   border-color: var(--brand);
+  background: #fff;
+  box-shadow: 0 0 0 4px var(--brand-lt);
+}
+#student-consigne {
+  transition: all 0.2s ease;
 }
 #btn-start:disabled {
   opacity: 0.5;

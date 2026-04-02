@@ -8,7 +8,8 @@ var S = {
   photos:0, absentMs:0,
   t0:Date.now(),
   startWall: new Date().toLocaleString('fr-CA'),
-  wc:0, cc:0, photoCount:0
+  wc:0, cc:0, photoCount:0,
+  consigne:''
 };
 var _absentStart = null;
 var _apReady = false;  /* true après le délai de 4s */
@@ -346,6 +347,10 @@ function setupApp(isSCORM) {
       markSession();
     }
     if (sv.t0) S.t0 = sv.t0;
+    if (sv.consigne) {
+      S.consigne = sv.consigne;
+      renderConsigne();
+    }
   }
 }
 
@@ -532,7 +537,7 @@ function build(){
     screenshots:S.screenshots,absentMs:S.absentMs,
     submitted:S.submitted,
     submitTime:S.submitTime,wc:S.wc, timeline: S.timeline,
-    t0: S.t0};
+    t0: S.t0, consigne: S.consigne};
 }
 function autoSave(){
   if(S.submitted)return;
@@ -1440,6 +1445,21 @@ async function testScreenPreflight() {
   }
 }
 
+function renderConsigne() {
+  var d = document.getElementById('consigne-display');
+  var f = document.getElementById('pf-consigne-text');
+  var w = document.getElementById('pf-consigne-wrap');
+  if(!S.consigne || S.consigne.trim().length === 0) {
+    if(d) d.innerHTML = '<div style="color:var(--text-3); font-style:italic; text-align:center; margin-top:40px;">Aucune consigne n\'a été saisie au démarrage de l\'examen.</div>';
+    if(w) w.style.display = 'none';
+    return;
+  }
+  var safe = esc(S.consigne);
+  if(d) d.innerHTML = safe;
+  if(f) f.innerHTML = safe;
+  if(w) w.style.display = 'block';
+}
+
 async function startExamReal(){
   // Réinitialisation de l'état de soumission pour le nouvel essai
   S.submitted = false;
@@ -1460,6 +1480,13 @@ async function startExamReal(){
     var hdrN = document.getElementById('hdr-user-name');
     if (hdrN) hdrN.textContent = '👤 ' + S.name;
     updSub();
+  }
+
+  // Capture de la consigne
+  var cInp = document.getElementById('work-instructions');
+  if (cInp) {
+    S.consigne = cInp.value;
+    renderConsigne();
   }
 
   document.getElementById('welcome').style.display = 'none';
