@@ -1483,7 +1483,7 @@ async function startExamReal(){
   }
 
   // Capture de la consigne
-  var cInp = document.getElementById('work-instructions');
+  var cInp = document.getElementById('student-consigne');
   if (cInp) {
     S.consigne = cInp.value;
     renderConsigne();
