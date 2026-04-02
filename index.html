@@ -566,11 +566,14 @@
       </div>
       <div class="res-modal-title" id="rm-title">Nom de la ressource</div>
       <div class="res-modal-desc" id="rm-desc">
-        Vous consultez actuellement cette ressource. L'éditeur est <strong>verrouillé</strong> pour garantir l'équité de l'examen.
+        L'éditeur est <strong>verrouillé</strong> pour assurer l'équité pendant votre consultation.
       </div>
-      <div class="res-modal-btns" id="rm-btns-start">
+      <div class="res-modal-btns">
         <button class="rm-btn rm-btn-primary" id="rm-btn-load">
           <span>Consulter dans l'éditeur</span>
+        </button>
+        <button class="rm-btn rm-btn-primary" id="rm-btn-pop-direct" style="background:var(--p2)">
+          <span>Ouvrir dans une fenêtre séparée</span>
         </button>
         <button class="rm-btn rm-btn-finish" onclick="finishRes()">
           <span>Annuler / Retour</span>
@@ -578,7 +581,26 @@
       </div>
     </div>
 
-    <!-- Conteneur de l'Iframe -->
+    <!-- VUE CONSULTATION EXTERNE (Pour Usito/Le Conjugueur) -->
+    <div id="res-external-view" style="display:none; padding: 20px; text-align: center;">
+      <div class="res-modal-icon" style="color:var(--p2); margin-bottom:15px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </div>
+      <div class="res-modal-title">Consultation en cours...</div>
+      <div class="res-modal-desc" style="font-size: 0.95em; color: #ccc;">
+        La ressource est ouverte dans une fenêtre séparée.<br>
+        <strong>L'éditeur reste verrouillé tant que vous consultez la ressource.</strong><br><br>
+        <span style="color:var(--p2)">Refermez la fenêtre de la ressource pour revenir automatiquement à l'examen.</span>
+      </div>
+      <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+        <p style="font-size: 0.85em; opacity: 0.7; margin-bottom: 15px;">Si le déverrouillage automatique ne fonctionne pas :</p>
+        <button class="rm-btn rm-btn-finish" onclick="finishRes()">
+          <span>J'ai terminé ma consultation</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Conteneur de l'Iframe (Pour ressources compatibles) -->
     <div id="res-frame-container" style="display:none">
       <div id="res-frame-header">
         <span id="res-frame-title">Aperçu de la ressource</span>

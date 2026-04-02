@@ -1130,17 +1130,21 @@ function openRes(key){
   log('CONSULTATION RESSOURCE', res.title + ' — Interface verrouillée pour suivi des ressources.','i');
 }
 
-/**
- * Affiche l'overlay de verrouillage (Interlock)
- */
+var _resPopup = null;
+var _resPoll = null;
+
 function showResModal(res) {
   const modal = document.getElementById('res-modal');
   const modalBox = document.getElementById('res-modal-box');
   const intro = document.getElementById('res-modal-intro');
+  const externalView = document.getElementById('res-external-view');
   const frameCont = document.getElementById('res-frame-container');
   const iframe = document.getElementById('res-iframe');
-  const fbBtn = document.getElementById('rm-btn-external');
+  
   const loadBtn = document.getElementById('rm-btn-load');
+  const popBtn = document.getElementById('rm-btn-pop-direct');
+  const fbBtn = document.getElementById('rm-btn-external');
+  
   const title = document.getElementById('rm-title');
   const frameTitle = document.getElementById('res-frame-title');
   const iconCont = document.getElementById('rm-icon');
@@ -1148,8 +1152,10 @@ function showResModal(res) {
   // Reset de l'état initial
   modalBox.classList.remove('expanded');
   intro.style.display = 'block';
+  externalView.style.display = 'none';
   frameCont.style.display = 'none';
   iframe.src = 'about:blank';
+  if(_resPoll) { clearInterval(_resPoll); _resPoll = null; }
 
   if (title) title.textContent = res.title;
   if (frameTitle) frameTitle.textContent = res.title;
@@ -1165,6 +1171,15 @@ function showResModal(res) {
   }
   if (iconCont) iconCont.innerHTML = iconSvg;
 
+  // Détection des sites bloquant l'iframe (Usito, Figaro)
+  const isBlocked = res.url.includes('usherbrooke.ca') || res.url.includes('lefigaro.fr');
+  
+  if(isBlocked) {
+    loadBtn.style.display = 'none'; // On ne propose pas l'iframe car on sait qu'elle échouera
+  } else {
+    loadBtn.style.display = 'flex';
+  }
+
   // Action : Charger dans l'iframe
   loadBtn.onclick = function() {
     modalBox.classList.add('expanded');
@@ -1173,11 +1188,31 @@ function showResModal(res) {
     iframe.src = res.url;
   };
 
-  // Action : Ouverture externe (secours)
-  fbBtn.onclick = function() {
-    window.open(res.url, 'res_ext_' + Date.now());
-    log('RESSOURCE EXTERNE', 'Ouverture en secours de ' + res.title, 'i');
+  // Action : Ouverture externe directe (Nouvelle stratégie)
+  const openExternal = function() {
+    intro.style.display = 'none';
+    externalView.style.display = 'block';
+    
+    _resPopup = window.open(res.url, 'res_consult_' + Date.now(), 'width=1100,height=800,resizable=1,scrollbars=1');
+    
+    if(!_resPopup) {
+      showToast('⚠️ Autorisez les popups pour consulter cette ressource.');
+    } else {
+      log('RESSOURCE EXTERNE', 'Ouverture de ' + res.title, 'i');
+      
+      // Surveiller la fermeture de la fenêtre pour déverrouillage automatique
+      _resPoll = setInterval(function() {
+        if(!_resPopup || _resPopup.closed) {
+          clearInterval(_resPoll);
+          _resPoll = null;
+          finishRes(); // Déverrouillage automatique
+        }
+      }, 1000);
+    }
   };
+
+  popBtn.onclick = openExternal;
+  fbBtn.onclick = openExternal; // Secours bouton mini
 
   modal.classList.add('v');
 }
@@ -1195,13 +1230,21 @@ function finishRes() {
     updLog(); updResSummary();
   }
   
-  // Nettoyage de l'iframe (coupe le son/vidéo)
+  if(_resPoll) { clearInterval(_resPoll); _resPoll = null; }
+  
+  // Nettoyage de l'iframe
   const iframe = document.getElementById('res-iframe');
   if(iframe) iframe.src = 'about:blank';
   
   const modalBox = document.getElementById('res-modal-box');
   if(modalBox) modalBox.classList.remove('expanded');
   
+  const intro = document.getElementById('res-modal-intro');
+  if(intro) intro.style.display = 'none';
+  
+  const externalView = document.getElementById('res-external-view');
+  if(externalView) externalView.style.display = 'none';
+
   const modal = document.getElementById('res-modal');
   if(modal) modal.classList.remove('v');
   
