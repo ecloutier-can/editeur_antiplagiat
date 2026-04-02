@@ -786,7 +786,7 @@ body{font-family:var(--font);font-size:13px;background:var(--bg);color:var(--tex
   #submitted-overlay,#alert-banner,#recovery-banner,#welcome,
   #toast,#modal,#cam-video,#cam-canvas{display:none!important}
   /* Numérotation pages — CSS Paged Media */
-  @page{size:A4;margin:15mm 15mm 20mm 20mm}
+  @page{size:A4;margin:20mm 18mm 20mm 22mm}
   #pf{display:block!important;font-family:'Times New Roman',serif;font-size:11pt;
     line-height:1.65;color:#000;counter-reset:pf-page}
   /* Pied de page avec numéro sur chaque page imprimée */
@@ -1089,4 +1089,3 @@ body.focus-mode #btn-focus-mode{background:rgba(255,220,100,.3);
   width:112px;height:63px;border-radius:3px;
   object-fit:cover;border:1px solid #c7d2fe}
 .screen-thumb-label{font-size:8px;color:#4338ca;text-align:center;max-width:112px}
-</style>
