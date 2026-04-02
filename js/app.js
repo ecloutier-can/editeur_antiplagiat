@@ -1092,6 +1092,7 @@ function applyColor(){document.execCommand('foreColor',false,document.getElement
 function ins(ch){document.execCommand('insertText',false,ch);ed.focus();}
 function updTb(){
   var m={'b-bold':'bold','b-ital':'italic','b-ulin':'underline','b-strk':'strikeThrough',
+         'b-sup':'superscript',
          'b-al':'justifyLeft','b-ac':'justifyCenter','b-ar':'justifyRight','b-aj':'justifyFull'};
   Object.keys(m).forEach(function(id){
     var el=document.getElementById(id);
