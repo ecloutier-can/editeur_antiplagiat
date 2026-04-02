@@ -870,11 +870,9 @@ function setupAP(){
     _absentStart = Date.now();
     
     if (!_curRes) {
-      playAlert('leave');
+      showBanner();
+      capturePhoto('Départ : ' + reason);
     }
-    
-    showBanner();
-    capturePhoto('Départ : ' + reason);
     updLog();
   }
 
@@ -887,18 +885,19 @@ function setupAP(){
     _isInternalAction = false; // Réinitialisation seulement après un retour réel
     var now = Date.now();
     var ms = now - _absentStart;
-    S.absentMs += ms;
-    var dur = (ms / 1000).toFixed(1);
-    
     _absentStart = null;
     _absentFocusLogged = false;
     _absentTabLogged = false;
-    
-    const type = reason.includes('Onglet') || reason.includes('visible') ? 'RETOUR (ONGLET)' : 'RETOUR (FOCUS)';
-    log(type, 'Retour après ' + dur + 's (' + reason + ').', 'i');
-    
-    hideBanner();
-    capturePhoto('Retour : ' + reason + ' (' + dur + 's)');
+
+    if (!_curRes) {
+      S.absentMs += ms;
+      const type = reason.includes('Onglet') || reason.includes('visible') ? 'RETOUR (ONGLET)' : 'RETOUR (FOCUS)';
+      log(type, 'Retour après ' + dur + 's (' + reason + ').', 'i');
+      hideBanner();
+      capturePhoto('Retour : ' + reason + ' (' + dur + 's)');
+    } else {
+      hideBanner(); // Toujours masquer la bannière au cas où elle traînerait
+    }
     updLog();
   }
 
